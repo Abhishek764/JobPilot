@@ -1,0 +1,16 @@
+**/node_modules
+**/.next
+**/dist
+**/.turbo
+**/coverage
+**/.git
+**/.github
+**/.vscode
+**/.idea
+**/.env
+**/.env.local
+**/*.log
+**/test-results
+**/playwright-report
+README.md
+LICENSE
