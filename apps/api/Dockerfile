@@ -27,7 +27,7 @@ RUN pnpm --filter @jobpilot/api build
 RUN pnpm --filter @jobpilot/api deploy --prod /out
 
 # -------- runtime --------
-FROM mcr.microsoft.com/playwright:v1.48.2-noble AS runtime
+FROM mcr.microsoft.com/playwright:v1.60.0-noble AS runtime
 WORKDIR /app
 ENV NODE_ENV=production
 COPY --from=build /out/node_modules ./node_modules
