@@ -1,0 +1,9 @@
+{
+  "extends": "@jobpilot/config/tsconfig/node.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "outDir": "dist"
+  },
+  "include": ["src/**/*", "prisma/**/*.ts"],
+  "exclude": ["node_modules", "dist"]
+}

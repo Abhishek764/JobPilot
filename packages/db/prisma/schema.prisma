@@ -1,0 +1,112 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ApplicationStatus {
+  SAVED
+  APPLIED
+  SCREEN
+  INTERVIEW
+  OFFER
+  REJECTED
+  WITHDRAWN
+  GHOSTED
+}
+
+model User {
+  id           String        @id @default(cuid())
+  clerkId      String        @unique
+  email        String        @unique
+  firstName    String?
+  lastName     String?
+  imageUrl     String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  applications Application[]
+  resumes      Resume[]
+
+  @@index([email])
+  @@map("users")
+}
+
+model Job {
+  id           String        @id @default(cuid())
+  externalId   String?
+  company      String
+  title        String
+  location     String?
+  remote       Boolean       @default(false)
+  description  String?       @db.Text
+  url          String        @unique
+  source       String
+  postedAt     DateTime?
+  scrapedAt    DateTime      @default(now())
+  salaryMin    Int?
+  salaryMax    Int?
+  currency     String?
+  tags         String[]      @default([])
+  applications Application[]
+
+  @@index([company])
+  @@index([source])
+  @@map("jobs")
+}
+
+model Application {
+  id         String            @id @default(cuid())
+  userId     String
+  jobId      String?
+  company    String
+  title      String
+  location   String?
+  status     ApplicationStatus @default(SAVED)
+  appliedAt  DateTime?
+  notes      String?           @db.Text
+  source     String?
+  url        String?
+  salaryMin  Int?
+  salaryMax  Int?
+  currency   String?
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+  user       User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  job        Job?              @relation(fields: [jobId], references: [id], onDelete: SetNull)
+  events     ApplicationEvent[]
+
+  @@index([userId, status])
+  @@index([userId, createdAt])
+  @@map("applications")
+}
+
+model ApplicationEvent {
+  id            String      @id @default(cuid())
+  applicationId String
+  type          String
+  payload       Json?
+  createdAt     DateTime    @default(now())
+  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@index([applicationId, createdAt])
+  @@map("application_events")
+}
+
+model Resume {
+  id            String   @id @default(cuid())
+  userId        String
+  title         String
+  content       String   @db.Text
+  fileUrl       String?
+  parsedSkills  String[] @default([])
+  parsedYears   Int?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("resumes")
+}
