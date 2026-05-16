@@ -18,19 +18,46 @@ enum ApplicationStatus {
   GHOSTED
 }
 
+enum Role {
+  USER
+  ADMIN
+}
+
+enum ExperienceLevel {
+  INTERN
+  JUNIOR
+  MID
+  SENIOR
+  STAFF
+  PRINCIPAL
+  EXECUTIVE
+}
+
 model User {
-  id           String        @id @default(cuid())
-  clerkId      String        @unique
-  email        String        @unique
-  firstName    String?
-  lastName     String?
-  imageUrl     String?
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-  applications Application[]
-  resumes      Resume[]
+  id              String           @id @default(cuid())
+  clerkId         String           @unique
+  email           String           @unique
+  name            String?
+  firstName       String?
+  lastName        String?
+  imageUrl        String?
+  role            Role             @default(USER)
+  skills          String[]         @default([])
+  preferredRoles  String[]         @default([])
+  experienceLevel ExperienceLevel?
+  resumeUrl       String?
+  githubUrl       String?
+  linkedinUrl     String?
+  bio             String?          @db.Text
+  location        String?
+  onboardedAt     DateTime?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  applications    Application[]
+  resumes         Resume[]
 
   @@index([email])
+  @@index([role])
   @@map("users")
 }
 
