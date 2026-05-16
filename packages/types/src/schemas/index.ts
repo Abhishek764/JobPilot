@@ -1,6 +1,50 @@
 import { z } from 'zod';
 
 import { APPLICATION_STATUSES } from '../domain/application';
+import { EXPERIENCE_LEVELS, ROLES } from '../domain/user';
+
+const httpsUrl = z
+  .string()
+  .url()
+  .refine((v) => v.startsWith('https://'), { message: 'must use https' });
+
+export const RoleSchema = z.enum(ROLES);
+export const ExperienceLevelSchema = z.enum(EXPERIENCE_LEVELS);
+
+export const SkillsSchema = z
+  .array(z.string().trim().min(1).max(50))
+  .max(50)
+  .transform((arr) => Array.from(new Set(arr.map((s) => s.toLowerCase()))));
+
+export const PreferredRolesSchema = z
+  .array(z.string().trim().min(1).max(80))
+  .max(20)
+  .transform((arr) => Array.from(new Set(arr)));
+
+export const OnboardingSchema = z.object({
+  name: z.string().trim().min(2).max(120),
+  experienceLevel: ExperienceLevelSchema,
+  skills: SkillsSchema.refine((s) => s.length >= 1, { message: 'add at least one skill' }),
+  preferredRoles: PreferredRolesSchema.refine((s) => s.length >= 1, {
+    message: 'add at least one preferred role',
+  }),
+  location: z.string().trim().max(120).optional().nullable(),
+  bio: z.string().trim().max(1_000).optional().nullable(),
+  resumeUrl: httpsUrl.optional().nullable(),
+  githubUrl: httpsUrl
+    .refine((v) => /github\.com/i.test(v), { message: 'must be a github.com url' })
+    .optional()
+    .nullable(),
+  linkedinUrl: httpsUrl
+    .refine((v) => /linkedin\.com/i.test(v), { message: 'must be a linkedin.com url' })
+    .optional()
+    .nullable(),
+});
+
+export const UpdateProfileSchema = OnboardingSchema.partial();
+
+export type OnboardingInput = z.infer<typeof OnboardingSchema>;
+export type UpdateProfileInput = z.infer<typeof UpdateProfileSchema>;
 
 export const PaginationSchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
