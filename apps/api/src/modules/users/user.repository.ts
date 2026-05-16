@@ -1,8 +1,10 @@
-import { prisma, type User } from '@jobpilot/db';
+import { prisma, type Prisma, type User } from '@jobpilot/db';
 
 export const userRepository = {
   findByClerkId: (clerkId: string): Promise<User | null> =>
     prisma.user.findUnique({ where: { clerkId } }),
+
+  findById: (id: string): Promise<User | null> => prisma.user.findUnique({ where: { id } }),
 
   upsertFromClerk: (input: {
     clerkId: string;
@@ -21,6 +23,12 @@ export const userRepository = {
       },
       create: input,
     }),
+
+  updateProfile: (id: string, data: Prisma.UserUpdateInput): Promise<User> =>
+    prisma.user.update({ where: { id }, data }),
+
+  completeOnboarding: (id: string, data: Prisma.UserUpdateInput): Promise<User> =>
+    prisma.user.update({ where: { id }, data: { ...data, onboardedAt: new Date() } }),
 
   deleteByClerkId: (clerkId: string): Promise<User> =>
     prisma.user.delete({ where: { clerkId } }),
