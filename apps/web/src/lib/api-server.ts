@@ -1,25 +1,26 @@
-'use client';
+import { auth } from '@clerk/nextjs/server';
 
 import { env } from './env';
 
 const API_BASE = `${env.NEXT_PUBLIC_API_URL}/api/v1`;
 
-export interface FetchOptions extends Omit<RequestInit, 'body'> {
-  body?: unknown;
-  token?: string | null;
-}
-
-export class ApiClientError extends Error {
+export class ApiServerError extends Error {
   constructor(public status: number, public code: string, message: string, public details?: unknown) {
     super(message);
-    this.name = 'ApiClientError';
+    this.name = 'ApiServerError';
   }
 }
 
-export const apiFetch = async <T>(path: string, opts: FetchOptions = {}): Promise<T> => {
+interface FetchOptions extends Omit<RequestInit, 'body'> {
+  body?: unknown;
+}
+
+export const apiServer = async <T>(path: string, opts: FetchOptions = {}): Promise<T> => {
+  const { getToken } = await auth();
+  const token = await getToken();
   const headers = new Headers(opts.headers);
   headers.set('content-type', 'application/json');
-  if (opts.token) headers.set('authorization', `Bearer ${opts.token}`);
+  if (token) headers.set('authorization', `Bearer ${token}`);
 
   const res = await fetch(`${API_BASE}${path}`, {
     ...opts,
@@ -36,7 +37,7 @@ export const apiFetch = async <T>(path: string, opts: FetchOptions = {}): Promis
 
   if (!res.ok || payload.success === false) {
     const err = payload.error ?? { code: 'UNKNOWN', message: 'Request failed' };
-    throw new ApiClientError(res.status, err.code, err.message, err.details);
+    throw new ApiServerError(res.status, err.code, err.message, err.details);
   }
 
   return payload.data as T;
