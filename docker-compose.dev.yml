@@ -1,0 +1,29 @@
+name: jobpilot-dev
+
+# Local infra only — run `pnpm dev` on host for hot-reload.
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: jobpilot-dev-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: jobpilot
+      POSTGRES_PASSWORD: jobpilot
+      POSTGRES_DB: jobpilot
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_dev:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    container_name: jobpilot-dev-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_dev:/data
+
+volumes:
+  postgres_dev:
+  redis_dev:
