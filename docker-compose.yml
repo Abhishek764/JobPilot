@@ -65,6 +65,32 @@ services:
       timeout: 5s
       retries: 5
 
+  worker:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    container_name: jobpilot-worker
+    restart: unless-stopped
+    command: ["node", "dist/worker.js"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://${POSTGRES_USER:-jobpilot}:${POSTGRES_PASSWORD:-jobpilot}@postgres:5432/${POSTGRES_DB:-jobpilot}?schema=public
+      REDIS_URL: redis://redis:6379
+      CLERK_SECRET_KEY: ${CLERK_SECRET_KEY}
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      BULL_PREFIX: ${BULL_PREFIX:-jobpilot}
+      SCRAPER_SCHEDULER_ENABLED: ${SCRAPER_SCHEDULER_ENABLED:-true}
+      SCRAPER_LISTING_CONCURRENCY: ${SCRAPER_LISTING_CONCURRENCY:-2}
+      SCRAPER_DETAIL_CONCURRENCY: ${SCRAPER_DETAIL_CONCURRENCY:-4}
+      SCRAPER_NORMALIZE_CONCURRENCY: ${SCRAPER_NORMALIZE_CONCURRENCY:-8}
+      SCRAPER_HEADLESS: "true"
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+
   web:
     build:
       context: .
