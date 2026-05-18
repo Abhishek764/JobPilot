@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import { APPLICATION_STATUSES } from '../domain/application';
+import { SALARY_PERIODS, SOURCE_PLATFORMS } from '../domain/job';
 import { EXPERIENCE_LEVELS, ROLES } from '../domain/user';
 
 const httpsUrl = z
@@ -80,6 +81,80 @@ export const ListApplicationsQuerySchema = PaginationSchema.extend({
 export const ScrapeJobSchema = z.object({
   url: z.string().url(),
 });
+
+export const SourcePlatformSchema = z.enum(SOURCE_PLATFORMS);
+export const SalaryPeriodSchema = z.enum(SALARY_PERIODS);
+
+export const NormalizedJobSchema = z.object({
+  externalId: z.string().min(1).max(200).nullable(),
+  sourcePlatform: SourcePlatformSchema,
+  source: z.string().min(1).max(100),
+  url: z.string().url(),
+  applyUrl: z.string().url(),
+  title: z.string().trim().min(1).max(300),
+  company: z.string().trim().min(1).max(200),
+  location: z.string().trim().max(200).nullable(),
+  remote: z.boolean().default(false),
+  description: z.string().max(50_000).nullable(),
+  roleCategory: z.string().trim().max(100).nullable(),
+  skills: z.array(z.string().trim().min(1).max(60)).max(100).default([]),
+  salaryMin: z.number().int().nonnegative().nullable(),
+  salaryMax: z.number().int().nonnegative().nullable(),
+  currency: z.string().length(3).nullable(),
+  salaryPeriod: SalaryPeriodSchema.nullable(),
+  postedAt: z.coerce.date().nullable(),
+});
+
+export const TriggerScrapeRunSchema = z.object({
+  platform: SourcePlatformSchema,
+  query: z.string().trim().min(1).max(200).optional(),
+  location: z.string().trim().max(120).optional(),
+  maxPages: z.coerce.number().int().min(1).max(20).optional(),
+});
+
+export const ListJobsQuerySchema = PaginationSchema.extend({
+  q: z.string().trim().max(200).optional(),
+  platform: SourcePlatformSchema.optional(),
+  company: z.string().trim().max(200).optional(),
+  location: z.string().trim().max(200).optional(),
+  remote: z.coerce.boolean().optional(),
+  roleCategory: z.string().trim().max(100).optional(),
+  skills: z
+    .union([z.string(), z.array(z.string())])
+    .transform((v) => (Array.isArray(v) ? v : v.split(',')))
+    .pipe(z.array(z.string().trim().min(1)).max(20))
+    .optional(),
+  salaryMin: z.coerce.number().int().nonnegative().optional(),
+  postedAfter: z.coerce.date().optional(),
+  sortBy: z.enum(['postedAt', 'scrapedAt']).default('postedAt'),
+  sortDir: z.enum(['asc', 'desc']).default('desc'),
+});
+
+export const ListScrapeRunsQuerySchema = PaginationSchema.extend({
+  platform: SourcePlatformSchema.optional(),
+  status: z.enum(['PENDING', 'RUNNING', 'COMPLETED', 'FAILED', 'PARTIAL']).optional(),
+});
+
+export const UpsertScrapeSourceSchema = z.object({
+  platform: SourcePlatformSchema,
+  enabled: z.boolean().optional(),
+  cron: z
+    .string()
+    .trim()
+    .regex(/^([0-9*,\-/]+\s+){4}[0-9*,\-/]+$/, { message: 'invalid cron expression' })
+    .nullable()
+    .optional(),
+  rateLimitPerMin: z.number().int().min(1).max(600).optional(),
+  maxConcurrency: z.number().int().min(1).max(20).optional(),
+  searchQueries: z.array(z.string().trim().min(1).max(200)).max(50).optional(),
+  locations: z.array(z.string().trim().min(1).max(120)).max(50).optional(),
+});
+
+export type TriggerScrapeRunInput = z.infer<typeof TriggerScrapeRunSchema>;
+export type ListJobsQuery = z.infer<typeof ListJobsQuerySchema>;
+export type ListScrapeRunsQuery = z.infer<typeof ListScrapeRunsQuerySchema>;
+export type UpsertScrapeSourceInput = z.infer<typeof UpsertScrapeSourceSchema>;
+export type NormalizedJobInput = z.infer<typeof NormalizedJobSchema>;
 
 export const AnalyzeResumeSchema = z.object({
   resumeId: z.string().cuid(),
