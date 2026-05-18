@@ -3,6 +3,7 @@ import type { Worker } from 'bullmq';
 import { env } from '../../config/env';
 import { logger } from '../../config/logger';
 
+import { createMatchAnalysisWorker } from './workers/match-analysis.worker';
 import { createNormalizeWorker } from './workers/normalize.worker';
 import { createSchedulerWorker } from './workers/scheduler.worker';
 import { createScrapeDetailWorker } from './workers/scrape-detail.worker';
@@ -16,6 +17,7 @@ export const startAllWorkers = (): Worker[] => {
     createScrapeListingWorker(),
     createScrapeDetailWorker(),
     createNormalizeWorker(),
+    createMatchAnalysisWorker(),
   ];
   if (env.SCRAPER_SCHEDULER_ENABLED) {
     workers.push(createSchedulerWorker());

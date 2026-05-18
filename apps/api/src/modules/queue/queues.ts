@@ -1,4 +1,5 @@
 import type { NormalizedJob, SourcePlatform } from '@jobpilot/types';
+import type { MatchTrack } from '@jobpilot/db';
 import { Queue, QueueEvents, type JobsOptions } from 'bullmq';
 
 import { env } from '../../config/env';
@@ -46,6 +47,28 @@ export const scrapeDetailQueue = new Queue<ScrapeDetailJob>('scrape-detail', {
   prefix,
   defaultJobOptions: defaultJobOpts,
 });
+
+export interface MatchAnalysisJob {
+  analysisId: string;
+  userId: string;
+  track: MatchTrack;
+}
+
+export const matchAnalysisQueue = new Queue<MatchAnalysisJob>('ai-match', {
+  connection,
+  prefix,
+  defaultJobOptions: {
+    attempts: 3,
+    backoff: { type: 'exponential', delay: 5_000 },
+    removeOnComplete: { age: 24 * 3_600, count: 1_000 },
+    removeOnFail: { age: 7 * 24 * 3_600, count: 1_000 },
+  },
+});
+
+export const matchAnalysisEvents = new QueueEvents('ai-match', { connection, prefix });
+
+export const enqueueMatchAnalysis = (data: MatchAnalysisJob) =>
+  matchAnalysisQueue.add(`match:${data.track}`, data, { jobId: data.analysisId });
 
 export const normalizeQueue = new Queue<NormalizeJob>('scrape-normalize', {
   connection,

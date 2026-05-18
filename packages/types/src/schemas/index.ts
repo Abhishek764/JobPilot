@@ -162,6 +162,33 @@ export const AnalyzeResumeSchema = z.object({
   jobDescription: z.string().min(50).optional(),
 });
 
+export const MATCH_TRACKS = ['BACKEND', 'FRONTEND', 'FULLSTACK', 'DEVOPS'] as const;
+export const MATCH_STATUSES = ['QUEUED', 'RUNNING', 'COMPLETED', 'FAILED'] as const;
+export const MatchTrackSchema = z.enum(MATCH_TRACKS);
+export const MatchStatusSchema = z.enum(MATCH_STATUSES);
+
+export const CreateMatchAnalysisSchema = z
+  .object({
+    resumeId: z.string().cuid(),
+    track: MatchTrackSchema,
+    jobId: z.string().cuid().optional(),
+    jobDescription: z.string().min(50).max(50_000).optional(),
+  })
+  .refine((v) => Boolean(v.jobId) || Boolean(v.jobDescription), {
+    message: 'jobId or jobDescription is required',
+    path: ['jobDescription'],
+  });
+
+export const ListMatchAnalysesQuerySchema = PaginationSchema.extend({
+  track: MatchTrackSchema.optional(),
+  status: MatchStatusSchema.optional(),
+});
+
+export type MatchTrackInput = z.infer<typeof MatchTrackSchema>;
+export type MatchStatusInput = z.infer<typeof MatchStatusSchema>;
+export type CreateMatchAnalysisInput = z.infer<typeof CreateMatchAnalysisSchema>;
+export type ListMatchAnalysesQuery = z.infer<typeof ListMatchAnalysesQuerySchema>;
+
 export const CreateResumeSchema = z.object({
   title: z.string().min(1).max(200),
   content: z.string().min(50),
