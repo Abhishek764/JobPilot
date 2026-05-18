@@ -1,29 +1,29 @@
-import { Queue, Worker, type JobsOptions } from 'bullmq';
+import type { Worker } from 'bullmq';
 
+import { env } from '../../config/env';
 import { logger } from '../../config/logger';
-import { redis } from '../../config/redis';
 
-const connection = redis;
+import { createNormalizeWorker } from './workers/normalize.worker';
+import { createSchedulerWorker } from './workers/scheduler.worker';
+import { createScrapeDetailWorker } from './workers/scrape-detail.worker';
+import { createScrapeListingWorker } from './workers/scrape-listing.worker';
 
-export const scrapeQueue = new Queue('scrape', { connection });
+export * from './queues';
+export * from './scheduler';
 
-export const enqueueScrape = (url: string, opts?: JobsOptions) =>
-  scrapeQueue.add('scrape-job', { url }, { removeOnComplete: 100, removeOnFail: 500, ...opts });
+export const startAllWorkers = (): Worker[] => {
+  const workers: Worker[] = [
+    createScrapeListingWorker(),
+    createScrapeDetailWorker(),
+    createNormalizeWorker(),
+  ];
+  if (env.SCRAPER_SCHEDULER_ENABLED) {
+    workers.push(createSchedulerWorker());
+    logger.info('scheduler worker enabled');
+  }
+  return workers;
+};
 
-export const startWorkers = async (): Promise<Worker> => {
-  const { scraperService } = await import('../scraper/scraper.service');
-
-  const worker = new Worker(
-    'scrape',
-    async (job) => {
-      const { url } = job.data as { url: string };
-      return scraperService.scrapeAndStore(url);
-    },
-    { connection, concurrency: 2 },
-  );
-
-  worker.on('completed', (job) => logger.info({ jobId: job.id }, 'scrape job done'));
-  worker.on('failed', (job, err) => logger.error({ jobId: job?.id, err }, 'scrape job failed'));
-
-  return worker;
+export const stopWorkers = async (workers: Worker[]): Promise<void> => {
+  await Promise.allSettled(workers.map((w) => w.close()));
 };
