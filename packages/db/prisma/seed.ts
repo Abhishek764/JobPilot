@@ -40,6 +40,51 @@ async function main() {
     ],
   });
 
+  const sources: Array<{
+    platform: 'LINKEDIN' | 'WELLFOUND' | 'INDEED' | 'NAUKRI';
+    cron: string;
+    rateLimitPerMin: number;
+    searchQueries: string[];
+    locations: string[];
+  }> = [
+    {
+      platform: 'LINKEDIN',
+      cron: '*/30 * * * *',
+      rateLimitPerMin: 15,
+      searchQueries: ['software engineer', 'frontend engineer'],
+      locations: ['United States', 'Remote'],
+    },
+    {
+      platform: 'WELLFOUND',
+      cron: '0 */2 * * *',
+      rateLimitPerMin: 15,
+      searchQueries: ['backend-engineer', 'fullstack-engineer'],
+      locations: [],
+    },
+    {
+      platform: 'INDEED',
+      cron: '*/45 * * * *',
+      rateLimitPerMin: 12,
+      searchQueries: ['software engineer'],
+      locations: ['Remote'],
+    },
+    {
+      platform: 'NAUKRI',
+      cron: '0 */3 * * *',
+      rateLimitPerMin: 15,
+      searchQueries: ['software developer'],
+      locations: ['bangalore', 'hyderabad'],
+    },
+  ];
+
+  for (const s of sources) {
+    await prisma.scrapeSource.upsert({
+      where: { platform: s.platform },
+      update: {},
+      create: { ...s, enabled: false },
+    });
+  }
+
   console.info('Seed complete.');
 }
 

@@ -33,6 +33,29 @@ enum ExperienceLevel {
   EXECUTIVE
 }
 
+enum SourcePlatform {
+  LINKEDIN
+  WELLFOUND
+  INDEED
+  NAUKRI
+  CUSTOM
+}
+
+enum SalaryPeriod {
+  HOURLY
+  DAILY
+  MONTHLY
+  YEARLY
+}
+
+enum ScrapeRunStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+  PARTIAL
+}
+
 model User {
   id              String           @id @default(cuid())
   clerkId         String           @unique
@@ -62,48 +85,64 @@ model User {
 }
 
 model Job {
-  id           String        @id @default(cuid())
-  externalId   String?
-  company      String
-  title        String
-  location     String?
-  remote       Boolean       @default(false)
-  description  String?       @db.Text
-  url          String        @unique
-  source       String
-  postedAt     DateTime?
-  scrapedAt    DateTime      @default(now())
+  id             String         @id @default(cuid())
+  externalId     String?
+  sourcePlatform SourcePlatform @default(CUSTOM)
+  source         String
+  url            String         @unique
+  applyUrl       String
+  contentHash    String         @unique
+
+  title       String
+  company     String
+  location    String?
+  remote      Boolean @default(false)
+  description String? @db.Text
+
+  roleCategory String?
+  skills       String[] @default([])
+  tags         String[] @default([])
+
   salaryMin    Int?
   salaryMax    Int?
   currency     String?
-  tags         String[]      @default([])
+  salaryPeriod SalaryPeriod?
+
+  postedAt   DateTime?
+  scrapedAt  DateTime  @default(now())
+  lastSeenAt DateTime  @default(now())
+  isActive   Boolean   @default(true)
+
   applications Application[]
 
+  @@index([sourcePlatform, postedAt(sort: Desc)])
   @@index([company])
-  @@index([source])
+  @@index([roleCategory])
+  @@index([isActive, postedAt(sort: Desc)])
+  @@index([skills], type: Gin)
   @@map("jobs")
 }
 
 model Application {
-  id         String            @id @default(cuid())
-  userId     String
-  jobId      String?
-  company    String
-  title      String
-  location   String?
-  status     ApplicationStatus @default(SAVED)
-  appliedAt  DateTime?
-  notes      String?           @db.Text
-  source     String?
-  url        String?
-  salaryMin  Int?
-  salaryMax  Int?
-  currency   String?
-  createdAt  DateTime          @default(now())
-  updatedAt  DateTime          @updatedAt
-  user       User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  job        Job?              @relation(fields: [jobId], references: [id], onDelete: SetNull)
-  events     ApplicationEvent[]
+  id        String             @id @default(cuid())
+  userId    String
+  jobId     String?
+  company   String
+  title     String
+  location  String?
+  status    ApplicationStatus  @default(SAVED)
+  appliedAt DateTime?
+  notes     String?            @db.Text
+  source    String?
+  url       String?
+  salaryMin Int?
+  salaryMax Int?
+  currency  String?
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+  user      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  job       Job?               @relation(fields: [jobId], references: [id], onDelete: SetNull)
+  events    ApplicationEvent[]
 
   @@index([userId, status])
   @@index([userId, createdAt])
@@ -123,17 +162,63 @@ model ApplicationEvent {
 }
 
 model Resume {
-  id            String   @id @default(cuid())
-  userId        String
-  title         String
-  content       String   @db.Text
-  fileUrl       String?
-  parsedSkills  String[] @default([])
-  parsedYears   Int?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id           String   @id @default(cuid())
+  userId       String
+  title        String
+  content      String   @db.Text
+  fileUrl      String?
+  parsedSkills String[] @default([])
+  parsedYears  Int?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@map("resumes")
+}
+
+model ScrapeSource {
+  id              String         @id @default(cuid())
+  platform        SourcePlatform @unique
+  enabled         Boolean        @default(true)
+  cron            String?
+  rateLimitPerMin Int            @default(20)
+  maxConcurrency  Int            @default(2)
+  searchQueries   String[]       @default([])
+  locations       String[]       @default([])
+  lastRunAt       DateTime?
+  config          Json?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  runs ScrapeRun[]
+
+  @@map("scrape_sources")
+}
+
+model ScrapeRun {
+  id           String          @id @default(cuid())
+  sourceId     String?
+  platform     SourcePlatform
+  query        String?
+  location     String?
+  status       ScrapeRunStatus @default(PENDING)
+  startedAt    DateTime?
+  finishedAt   DateTime?
+  durationMs   Int?
+  pagesScraped Int             @default(0)
+  jobsFound    Int             @default(0)
+  jobsNew      Int             @default(0)
+  jobsUpdated  Int             @default(0)
+  jobsFailed   Int             @default(0)
+  error        String?         @db.Text
+  triggeredBy  String?
+  metadata     Json?
+  createdAt    DateTime        @default(now())
+
+  source ScrapeSource? @relation(fields: [sourceId], references: [id], onDelete: SetNull)
+
+  @@index([platform, createdAt(sort: Desc)])
+  @@index([status, createdAt(sort: Desc)])
+  @@map("scrape_runs")
 }
