@@ -24,6 +24,18 @@ const EnvSchema = z.object({
     .string()
     .default('true')
     .transform((s) => s !== 'false'),
+  SCRAPER_LISTING_CONCURRENCY: z.coerce.number().int().positive().default(2),
+  SCRAPER_DETAIL_CONCURRENCY: z.coerce.number().int().positive().default(4),
+  SCRAPER_NORMALIZE_CONCURRENCY: z.coerce.number().int().positive().default(8),
+  SCRAPER_MAX_RETRIES: z.coerce.number().int().min(0).max(20).default(5),
+  SCRAPER_BACKOFF_MS: z.coerce.number().int().positive().default(15_000),
+  SCRAPER_MAX_PAGES_PER_RUN: z.coerce.number().int().positive().default(5),
+  SCRAPER_DEFAULT_RATE_PER_MIN: z.coerce.number().int().positive().default(20),
+  SCRAPER_SCHEDULER_ENABLED: z
+    .string()
+    .default('false')
+    .transform((s) => s === 'true'),
+  BULL_PREFIX: z.string().default('jobpilot'),
   RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(60_000),
   RATE_LIMIT_MAX: z.coerce.number().int().positive().default(100),
   SENTRY_DSN: z.string().optional(),
