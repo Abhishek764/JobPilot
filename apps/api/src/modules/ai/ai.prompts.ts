@@ -104,57 +104,51 @@ export const buildUserPrompt = (input: AnalysisInput): string => {
   ].join('\n');
 };
 
-export const RESPONSE_JSON_SCHEMA = {
-  name: 'job_match_analysis',
-  strict: true,
-  schema: {
-    type: 'object',
-    additionalProperties: false,
-    properties: {
-      compatibility: { type: 'integer', minimum: 0, maximum: 100 },
-      readiness: { type: 'integer', minimum: 0, maximum: 100 },
-      summary: { type: 'string' },
-      breakdown: {
-        type: 'object',
-        additionalProperties: false,
-        properties: {
-          coreSkills: { type: 'integer', minimum: 0, maximum: 100 },
-          experience: { type: 'integer', minimum: 0, maximum: 100 },
-          projects: { type: 'integer', minimum: 0, maximum: 100 },
-          jobAlignment: { type: 'integer', minimum: 0, maximum: 100 },
-        },
-        required: ['coreSkills', 'experience', 'projects', 'jobAlignment'],
+import { SchemaType } from '@google/generative-ai';
+
+/**
+ * Gemini structured-output schema. Uses SchemaType enum so the SDK serializes
+ * to the Gemini API's expected uppercase type strings.
+ */
+export const GEMINI_RESPONSE_SCHEMA = {
+  type: SchemaType.OBJECT,
+  properties: {
+    compatibility: { type: SchemaType.INTEGER },
+    readiness: { type: SchemaType.INTEGER },
+    summary: { type: SchemaType.STRING },
+    breakdown: {
+      type: SchemaType.OBJECT,
+      properties: {
+        coreSkills: { type: SchemaType.INTEGER },
+        experience: { type: SchemaType.INTEGER },
+        projects: { type: SchemaType.INTEGER },
+        jobAlignment: { type: SchemaType.INTEGER },
       },
-      strengths: {
-        type: 'array',
-        items: { type: 'string' },
-        minItems: 0,
-        maxItems: 10,
-      },
-      missingSkills: {
-        type: 'array',
-        items: { type: 'string' },
-        minItems: 0,
-        maxItems: 15,
-      },
-      suggestions: {
-        type: 'array',
-        items: { type: 'string' },
-        minItems: 0,
-        maxItems: 10,
-      },
+      required: ['coreSkills', 'experience', 'projects', 'jobAlignment'],
     },
-    required: [
-      'compatibility',
-      'readiness',
-      'summary',
-      'breakdown',
-      'strengths',
-      'missingSkills',
-      'suggestions',
-    ],
+    strengths: {
+      type: SchemaType.ARRAY,
+      items: { type: SchemaType.STRING },
+    },
+    missingSkills: {
+      type: SchemaType.ARRAY,
+      items: { type: SchemaType.STRING },
+    },
+    suggestions: {
+      type: SchemaType.ARRAY,
+      items: { type: SchemaType.STRING },
+    },
   },
-} as const;
+  required: [
+    'compatibility',
+    'readiness',
+    'summary',
+    'breakdown',
+    'strengths',
+    'missingSkills',
+    'suggestions',
+  ],
+};
 
 export interface MatchAnalysisResult {
   compatibility: number;

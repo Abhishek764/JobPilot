@@ -8,15 +8,14 @@ import { UpstreamError } from '../../shared/errors';
 import { aiCache, hashPrompt } from './ai.cache';
 import {
   buildUserPrompt,
-  RESPONSE_JSON_SCHEMA,
+  GEMINI_RESPONSE_SCHEMA,
   SYSTEM_PROMPT,
   type AnalysisInput,
   type MatchAnalysisResult,
   type Track,
 } from './ai.prompts';
 import { calibrate, skillOverlap, truncate } from './ai.scoring';
-import { estimateCostUsd, getOpenAI } from './openai.client';
-import { getModel } from './gemini.client';
+import { estimateCostUsd, getModel } from './gemini.client';
 
 const safeJson = <T>(text: string): T => {
   const cleaned = text.replace(/```(?:json)?/g, '').trim();
@@ -51,7 +50,7 @@ export const aiService = {
    */
   async analyzeMatch(rawInput: AnalysisInput, opts: AnalyzeOpts = {}): Promise<AnalyzeOutcome> {
     const operation = 'match.analyze';
-    const model = env.OPENAI_MODEL;
+    const model = env.GEMINI_MATCH_MODEL;
 
     const input: AnalysisInput = {
       ...rawInput,
@@ -97,32 +96,30 @@ export const aiService = {
     }
 
     const userPrompt = buildUserPrompt(input);
-    const openai = getOpenAI();
 
     let parsed: MatchAnalysisResult;
     let tokensIn = 0;
     let tokensOut = 0;
 
     try {
-      const completion = await openai.chat.completions.create({
-        model,
-        temperature: 0.2,
-        messages: [
-          { role: 'system', content: SYSTEM_PROMPT },
-          { role: 'user', content: userPrompt },
-        ],
-        response_format: {
-          type: 'json_schema',
-          json_schema: RESPONSE_JSON_SCHEMA,
+      const gen = getModel(model);
+      const response = await gen.generateContent({
+        systemInstruction: { role: 'system', parts: [{ text: SYSTEM_PROMPT }] },
+        contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
+        generationConfig: {
+          temperature: 0.2,
+          responseMimeType: 'application/json',
+          responseSchema: GEMINI_RESPONSE_SCHEMA,
         },
       });
-      const text = completion.choices[0]?.message?.content ?? '';
+      const text = response.response.text();
       if (!text) throw new UpstreamError('Empty AI response');
       parsed = safeJson<MatchAnalysisResult>(text);
-      tokensIn = completion.usage?.prompt_tokens ?? 0;
-      tokensOut = completion.usage?.completion_tokens ?? 0;
+      const usage = response.response.usageMetadata;
+      tokensIn = usage?.promptTokenCount ?? 0;
+      tokensOut = usage?.candidatesTokenCount ?? 0;
     } catch (err) {
-      logger.error({ err: String(err), track: input.track }, 'openai match call failed');
+      logger.error({ err: String(err), track: input.track }, 'gemini match call failed');
       throw err instanceof UpstreamError ? err : new UpstreamError('AI provider error', { err: String(err) });
     }
 
