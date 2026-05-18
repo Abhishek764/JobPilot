@@ -4,7 +4,8 @@ import { env } from '../../config/env';
 import { logger } from '../../config/logger';
 import { UpstreamError } from '../../shared/errors';
 
-import { getBrowser } from './browser';
+import { acquireScraperContext } from './browser';
+import { canonicalizeUrl, contentHash } from './core/dedup';
 
 interface ScrapedJob {
   title: string;
@@ -15,12 +16,10 @@ interface ScrapedJob {
 }
 
 const scrapeUrl = async (url: string): Promise<ScrapedJob> => {
-  const browser = await getBrowser();
-  const context = await browser.newContext({ userAgent: env.SCRAPER_USER_AGENT });
-  const page = await context.newPage();
+  const handle = await acquireScraperContext();
   try {
-    await page.goto(url, { timeout: env.SCRAPER_TIMEOUT_MS, waitUntil: 'domcontentloaded' });
-    const data = await page.evaluate(() => ({
+    await handle.page.goto(url, { timeout: env.SCRAPER_TIMEOUT_MS, waitUntil: 'domcontentloaded' });
+    const data = await handle.page.evaluate(() => ({
       title:
         document.querySelector('h1')?.textContent?.trim() ??
         document.querySelector('[data-test="job-title"]')?.textContent?.trim() ??
@@ -38,27 +37,43 @@ const scrapeUrl = async (url: string): Promise<ScrapedJob> => {
     logger.error({ err, url }, 'scrape failed');
     throw err instanceof UpstreamError ? err : new UpstreamError('Scrape failed', { url });
   } finally {
-    await context.close();
+    await handle.close();
   }
 };
 
 export const scraperService = {
-  async scrapeAndStore(url: string): Promise<Job> {
-    const data = await scrapeUrl(url);
+  async scrapeAndStore(rawUrl: string): Promise<Job> {
+    const data = await scrapeUrl(rawUrl);
+    const url = canonicalizeUrl(rawUrl);
     const host = new URL(url).hostname;
+    const company = data.company || host;
+    const hash = contentHash({
+      sourcePlatform: 'CUSTOM',
+      company,
+      title: data.title,
+      location: data.location,
+      externalId: null,
+      url,
+    });
+
     return prisma.job.upsert({
       where: { url },
       update: {
         title: data.title,
-        company: data.company || host,
+        company,
         location: data.location,
         description: data.description,
         scrapedAt: new Date(),
+        lastSeenAt: new Date(),
+        isActive: true,
       },
       create: {
         url,
+        applyUrl: url,
+        contentHash: hash,
+        sourcePlatform: 'CUSTOM',
         title: data.title,
-        company: data.company || host,
+        company,
         location: data.location,
         description: data.description,
         source: host,
