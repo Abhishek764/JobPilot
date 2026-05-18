@@ -53,5 +53,5 @@ playwright/.cache
 *.pem
 .cache
 
-# Claude Code local data
+# Local agent/tooling data
 .claude/
