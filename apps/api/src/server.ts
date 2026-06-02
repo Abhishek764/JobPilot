@@ -1,3 +1,5 @@
+import { createServer } from 'node:http';
+
 import { prisma } from '@jobpilot/db';
 
 import { createApp } from './app';
@@ -5,10 +7,14 @@ import { env } from './config/env';
 import { logger } from './config/logger';
 import { redis } from './config/redis';
 import { closeBrowser } from './modules/scraper/browser';
+import { closeRealtime, initRealtime } from './realtime/gateway';
 
 const app = createApp();
+const server = createServer(app);
 
-const server = app.listen(env.API_PORT, env.API_HOST, () => {
+initRealtime(server);
+
+server.listen(env.API_PORT, env.API_HOST, () => {
   logger.info(
     { port: env.API_PORT, host: env.API_HOST, env: env.NODE_ENV },
     `🚀 API listening on http://${env.API_HOST}:${env.API_PORT}`,
@@ -25,6 +31,7 @@ const shutdown = async (signal: string): Promise<void> => {
   }, 10_000);
 
   try {
+    await closeRealtime();
     await closeBrowser();
     await redis.quit();
     await prisma.$disconnect();
