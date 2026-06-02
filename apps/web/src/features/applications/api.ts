@@ -27,8 +27,14 @@ export const applicationsApi = {
       token,
     }),
 
+  get: (token: string | null, id: string): Promise<Application> =>
+    apiFetch<Application>(`/applications/${id}`, { token }),
+
   create: (token: string | null, body: Partial<Application>): Promise<Application> =>
     apiFetch<Application>('/applications', { method: 'POST', body, token }),
+
+  setStatus: (token: string | null, id: string, status: string): Promise<Application> =>
+    apiFetch<Application>(`/applications/${id}/status`, { method: 'PATCH', body: { status }, token }),
 
   update: (token: string | null, id: string, body: Partial<Application>): Promise<Application> =>
     apiFetch<Application>(`/applications/${id}`, { method: 'PATCH', body, token }),

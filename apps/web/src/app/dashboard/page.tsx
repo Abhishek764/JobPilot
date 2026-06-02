@@ -92,7 +92,7 @@ export default async function DashboardPage() {
           </CardHeader>
           <CardContent className="space-y-2">
             <Button asChild className="w-full">
-              <Link href="/applications/new">Add application</Link>
+              <Link href="/applications">Open application board</Link>
             </Button>
             <Button asChild variant="outline" className="w-full">
               <Link href="/settings">Edit profile</Link>

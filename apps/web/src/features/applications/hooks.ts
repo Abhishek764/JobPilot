@@ -50,6 +50,27 @@ export const useBoard = (filters: BoardFilters) => {
   });
 };
 
+export const useApplication = (id: string | null) => {
+  const token = useToken();
+  return useQuery({
+    queryKey: applicationKeys.detail(id ?? ''),
+    enabled: Boolean(id),
+    queryFn: async () => applicationsApi.get(await token(), id!),
+  });
+};
+
+export const useSetStatus = (id: string) => {
+  const token = useToken();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (status: string) => applicationsApi.setStatus(await token(), id, status),
+    onSuccess: () => {
+      void qc.invalidateQueries(boardFilter);
+      void qc.invalidateQueries({ queryKey: applicationKeys.detail(id) });
+    },
+  });
+};
+
 export const useMoveApplication = () => {
   const token = useToken();
   const qc = useQueryClient();
