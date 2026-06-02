@@ -10,12 +10,32 @@ datasource db {
 enum ApplicationStatus {
   SAVED
   APPLIED
+  OA
   SCREEN
   INTERVIEW
   OFFER
   REJECTED
   WITHDRAWN
   GHOSTED
+}
+
+enum ApplicationEventType {
+  CREATED
+  STATUS_CHANGED
+  MOVED
+  UPDATED
+  NOTE_ADDED
+  NOTE_UPDATED
+  NOTE_DELETED
+  REMINDER_ADDED
+  REMINDER_COMPLETED
+  REMINDER_DELETED
+}
+
+enum ReminderStatus {
+  PENDING
+  COMPLETED
+  CANCELLED
 }
 
 enum Role {
@@ -148,6 +168,7 @@ model Application {
   title     String
   location  String?
   status    ApplicationStatus  @default(SAVED)
+  position  Float              @default(0)
   appliedAt DateTime?
   notes     String?            @db.Text
   source    String?
@@ -160,22 +181,53 @@ model Application {
   user      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   job       Job?               @relation(fields: [jobId], references: [id], onDelete: SetNull)
   events    ApplicationEvent[]
+  appNotes  ApplicationNote[]
+  reminders Reminder[]
 
-  @@index([userId, status])
+  @@index([userId, status, position])
   @@index([userId, createdAt])
+  @@index([userId, updatedAt(sort: Desc)])
   @@map("applications")
 }
 
 model ApplicationEvent {
+  id            String               @id @default(cuid())
+  applicationId String
+  type          ApplicationEventType
+  payload       Json?
+  createdAt     DateTime             @default(now())
+  application   Application          @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@index([applicationId, createdAt(sort: Desc)])
+  @@map("application_events")
+}
+
+model ApplicationNote {
   id            String      @id @default(cuid())
   applicationId String
-  type          String
-  payload       Json?
+  body          String      @db.Text
   createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
   application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
 
-  @@index([applicationId, createdAt])
-  @@map("application_events")
+  @@index([applicationId, createdAt(sort: Desc)])
+  @@map("application_notes")
+}
+
+model Reminder {
+  id            String         @id @default(cuid())
+  applicationId String
+  title         String
+  dueAt         DateTime
+  status        ReminderStatus @default(PENDING)
+  completedAt   DateTime?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  application   Application    @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@index([applicationId, dueAt])
+  @@index([status, dueAt])
+  @@map("reminders")
 }
 
 model Resume {
