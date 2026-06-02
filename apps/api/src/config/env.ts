@@ -19,6 +19,7 @@ const EnvSchema = z.object({
   GEMINI_API_KEY: z.string().min(1),
   GEMINI_MODEL: z.string().default('gemini-2.0-flash-exp'),
   GEMINI_MATCH_MODEL: z.string().default('gemini-2.0-flash-exp'),
+  GEMINI_RESUME_MODEL: z.string().default('gemini-2.0-flash-exp'),
   AI_CACHE_TTL_SECONDS: z.coerce.number().int().positive().default(60 * 60 * 24 * 7),
   AI_MAX_RESUME_CHARS: z.coerce.number().int().positive().default(12_000),
   AI_MAX_JOB_CHARS: z.coerce.number().int().positive().default(8_000),
@@ -40,6 +41,19 @@ const EnvSchema = z.object({
     .string()
     .default('false')
     .transform((s) => s === 'true'),
+  S3_REGION: z.string().default('us-east-1'),
+  S3_BUCKET: z.string().optional(),
+  S3_ENDPOINT: z.string().url().optional(),
+  S3_ACCESS_KEY_ID: z.string().optional(),
+  S3_SECRET_ACCESS_KEY: z.string().optional(),
+  S3_FORCE_PATH_STYLE: z
+    .string()
+    .default('false')
+    .transform((s) => s === 'true'),
+  RESUME_MAX_BYTES: z.coerce.number().int().positive().default(15 * 1024 * 1024),
+  RESUME_URL_TTL_SECONDS: z.coerce.number().int().positive().default(900),
+  RESUME_PARSE_CONCURRENCY: z.coerce.number().int().positive().default(2),
+  RESUME_AI_CONCURRENCY: z.coerce.number().int().positive().default(4),
   BULL_PREFIX: z.string().default('jobpilot'),
   RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(60_000),
   RATE_LIMIT_MAX: z.coerce.number().int().positive().default(100),
