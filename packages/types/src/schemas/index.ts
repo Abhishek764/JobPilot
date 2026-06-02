@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import { APPLICATION_STATUSES, REMINDER_STATUSES } from '../domain/application';
+import { COVER_LETTER_TONES } from '../domain/resume';
 import { SALARY_PERIODS, SOURCE_PLATFORMS } from '../domain/job';
 import { EXPERIENCE_LEVELS, ROLES } from '../domain/user';
 
@@ -251,6 +252,53 @@ export const CreateResumeSchema = z.object({
   content: z.string().min(50),
   fileUrl: z.string().url().optional().nullable(),
 });
+
+/** Request a presigned upload for a PDF resume. */
+export const UploadResumeSchema = z.object({
+  title: z.string().trim().min(1).max(200),
+  filename: z.string().trim().min(1).max(255),
+  contentType: z.literal('application/pdf'),
+  sizeBytes: z.number().int().positive().max(15 * 1024 * 1024),
+});
+
+export const ListResumesQuerySchema = PaginationSchema;
+
+const jobRef = {
+  jobId: z.string().cuid().optional(),
+  jobDescription: z.string().trim().min(50).max(50_000).optional(),
+};
+
+/** ATS analysis. Without a job reference it runs an ATS-only pass. */
+export const CreateResumeAnalysisSchema = z.object(jobRef);
+
+export const CreateResumeVersionSchema = z
+  .object({
+    ...jobRef,
+    analysisId: z.string().cuid().optional(),
+    label: z.string().trim().min(1).max(120).optional(),
+  })
+  .refine((v) => Boolean(v.jobId) || Boolean(v.jobDescription), {
+    message: 'jobId or jobDescription is required to tailor a resume',
+    path: ['jobDescription'],
+  });
+
+export const CoverLetterToneSchema = z.enum(COVER_LETTER_TONES);
+
+export const CreateCoverLetterSchema = z
+  .object({
+    ...jobRef,
+    tone: CoverLetterToneSchema.default('PROFESSIONAL'),
+  })
+  .refine((v) => Boolean(v.jobId) || Boolean(v.jobDescription), {
+    message: 'jobId or jobDescription is required for a cover letter',
+    path: ['jobDescription'],
+  });
+
+export type UploadResumeInput = z.infer<typeof UploadResumeSchema>;
+export type ListResumesQuery = z.infer<typeof ListResumesQuerySchema>;
+export type CreateResumeAnalysisInput = z.infer<typeof CreateResumeAnalysisSchema>;
+export type CreateResumeVersionInput = z.infer<typeof CreateResumeVersionSchema>;
+export type CreateCoverLetterInput = z.infer<typeof CreateCoverLetterSchema>;
 
 export type CreateApplicationInput = z.infer<typeof CreateApplicationSchema>;
 export type UpdateApplicationInput = z.infer<typeof UpdateApplicationSchema>;
