@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { APPLICATION_STATUSES } from '../domain/application';
+import { APPLICATION_STATUSES, REMINDER_STATUSES } from '../domain/application';
 import { SALARY_PERIODS, SOURCE_PLATFORMS } from '../domain/job';
 import { EXPERIENCE_LEVELS, ROLES } from '../domain/user';
 
@@ -77,6 +77,63 @@ export const ListApplicationsQuerySchema = PaginationSchema.extend({
   sortBy: z.enum(['createdAt', 'updatedAt', 'appliedAt', 'company']).default('createdAt'),
   sortDir: z.enum(['asc', 'desc']).default('desc'),
 });
+
+/** Filters applied to every column of the Kanban board. */
+export const BoardQuerySchema = z.object({
+  search: z.string().trim().max(200).optional(),
+  source: z.string().trim().max(100).optional(),
+});
+
+/** Move a card to a status/position. `position` is a fractional rank. */
+export const MoveApplicationSchema = z.object({
+  status: ApplicationStatusSchema,
+  position: z.number().finite(),
+});
+
+export const UpdateStatusSchema = z.object({
+  status: ApplicationStatusSchema,
+});
+
+export const ListEventsQuerySchema = PaginationSchema.extend({
+  pageSize: z.coerce.number().int().min(1).max(200).default(50),
+});
+
+export const CreateNoteSchema = z.object({
+  body: z.string().trim().min(1).max(10_000),
+});
+
+export const UpdateNoteSchema = CreateNoteSchema;
+
+export const ReminderStatusSchema = z.enum(REMINDER_STATUSES);
+
+export const CreateReminderSchema = z.object({
+  title: z.string().trim().min(1).max(200),
+  dueAt: z.coerce.date(),
+});
+
+export const UpdateReminderSchema = z
+  .object({
+    title: z.string().trim().min(1).max(200).optional(),
+    dueAt: z.coerce.date().optional(),
+    status: ReminderStatusSchema.optional(),
+  })
+  .refine((v) => Object.keys(v).length > 0, { message: 'no fields to update' });
+
+export const ListRemindersQuerySchema = PaginationSchema.extend({
+  status: ReminderStatusSchema.optional(),
+  upcoming: z.coerce.boolean().optional(),
+  pageSize: z.coerce.number().int().min(1).max(100).default(50),
+});
+
+export type BoardQuery = z.infer<typeof BoardQuerySchema>;
+export type MoveApplicationInput = z.infer<typeof MoveApplicationSchema>;
+export type UpdateStatusInput = z.infer<typeof UpdateStatusSchema>;
+export type ListEventsQuery = z.infer<typeof ListEventsQuerySchema>;
+export type CreateNoteInput = z.infer<typeof CreateNoteSchema>;
+export type UpdateNoteInput = z.infer<typeof UpdateNoteSchema>;
+export type CreateReminderInput = z.infer<typeof CreateReminderSchema>;
+export type UpdateReminderInput = z.infer<typeof UpdateReminderSchema>;
+export type ListRemindersQuery = z.infer<typeof ListRemindersQuerySchema>;
 
 export const ScrapeJobSchema = z.object({
   url: z.string().url(),
