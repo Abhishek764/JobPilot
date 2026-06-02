@@ -12,6 +12,11 @@ export const applicationController = {
     res.json({ success: true, data: result });
   }),
 
+  board: asyncHandler(async (req: Request, res: Response) => {
+    const board = await applicationService.board(getClerkId(req), req.query as never);
+    res.json({ success: true, data: board });
+  }),
+
   get: asyncHandler(async (req: Request, res: Response) => {
     const app = await applicationService.get(getClerkId(req), req.params.id);
     res.json({ success: true, data: app });
@@ -25,6 +30,21 @@ export const applicationController = {
   update: asyncHandler(async (req: Request, res: Response) => {
     const app = await applicationService.update(getClerkId(req), req.params.id, req.body);
     res.json({ success: true, data: app });
+  }),
+
+  move: asyncHandler(async (req: Request, res: Response) => {
+    const app = await applicationService.move(getClerkId(req), req.params.id, req.body);
+    res.json({ success: true, data: app });
+  }),
+
+  updateStatus: asyncHandler(async (req: Request, res: Response) => {
+    const app = await applicationService.updateStatus(getClerkId(req), req.params.id, req.body);
+    res.json({ success: true, data: app });
+  }),
+
+  events: asyncHandler(async (req: Request, res: Response) => {
+    const result = await applicationService.listEvents(getClerkId(req), req.params.id, req.query as never);
+    res.json({ success: true, data: result });
   }),
 
   remove: asyncHandler(async (req: Request, res: Response) => {
