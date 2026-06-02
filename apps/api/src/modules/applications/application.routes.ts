@@ -13,6 +13,8 @@ import { attachUserId, requireAuth } from '../../middleware/auth';
 import { validate } from '../../middleware/validate';
 
 import { applicationController } from './application.controller';
+import { noteRouter } from './note.routes';
+import { reminderRouter } from './reminder.routes';
 
 export const applicationRouter: Router = Router();
 
@@ -33,3 +35,6 @@ applicationRouter.get(
   validate(ListEventsQuerySchema, 'query'),
   applicationController.events,
 );
+
+applicationRouter.use('/:id/notes', noteRouter);
+applicationRouter.use('/:id/reminders', reminderRouter);
