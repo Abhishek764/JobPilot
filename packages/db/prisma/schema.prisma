@@ -90,6 +90,21 @@ enum MatchStatus {
   FAILED
 }
 
+enum ProcessingStatus {
+  QUEUED
+  RUNNING
+  COMPLETED
+  FAILED
+}
+
+enum ResumeFileStatus {
+  PENDING
+  UPLOADED
+  PARSING
+  PARSED
+  FAILED
+}
+
 model User {
   id              String           @id @default(cuid())
   clerkId         String           @unique
@@ -231,20 +246,115 @@ model Reminder {
 }
 
 model Resume {
-  id           String   @id @default(cuid())
+  id           String           @id @default(cuid())
   userId       String
   title        String
-  content      String   @db.Text
+  content      String           @default("") @db.Text
   fileUrl      String?
-  parsedSkills String[] @default([])
+  fileKey      String?
+  mimeType     String?
+  sizeBytes    Int?
+  fileStatus   ResumeFileStatus @default(PENDING)
+  parseError   String?          @db.Text
+  atsScore     Int?
+  parsedSkills String[]         @default([])
   parsedYears  Int?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  matchAnalyses  MatchAnalysis[]
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+  user          User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  matchAnalyses MatchAnalysis[]
+  analyses      ResumeAnalysis[]
+  versions      ResumeVersion[]
+  coverLetters  CoverLetter[]
 
-  @@index([userId])
+  @@index([userId, createdAt(sort: Desc)])
   @@map("resumes")
+}
+
+model ResumeAnalysis {
+  id              String           @id @default(cuid())
+  resumeId        String
+  userId          String
+  jobId           String?
+  jobDescription  String?          @db.Text
+  status          ProcessingStatus @default(QUEUED)
+  queueJobId      String?          @unique
+  atsScore        Int?
+  keywordScore    Int?
+  overallScore    Int?
+  matchedKeywords String[]         @default([])
+  missingKeywords String[]         @default([])
+  strengths       String[]         @default([])
+  weaknesses      String[]         @default([])
+  suggestions     Json?
+  atsIssues       Json?
+  rawResult       Json?
+  model           String?
+  tokensIn        Int              @default(0)
+  tokensOut       Int              @default(0)
+  costUsd         Float            @default(0)
+  durationMs      Int?
+  error           String?          @db.Text
+  startedAt       DateTime?
+  completedAt     DateTime?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  resume Resume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+
+  @@index([resumeId, createdAt(sort: Desc)])
+  @@index([userId, status])
+  @@map("resume_analyses")
+}
+
+model ResumeVersion {
+  id         String           @id @default(cuid())
+  resumeId   String
+  userId     String
+  analysisId String?
+  label      String
+  status     ProcessingStatus @default(QUEUED)
+  queueJobId String?          @unique
+  content    Json?
+  markdown   String?          @db.Text
+  fileKey    String?
+  model      String?
+  tokensIn   Int              @default(0)
+  tokensOut  Int              @default(0)
+  costUsd    Float            @default(0)
+  error      String?          @db.Text
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+
+  resume Resume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+
+  @@index([resumeId, createdAt(sort: Desc)])
+  @@map("resume_versions")
+}
+
+model CoverLetter {
+  id             String           @id @default(cuid())
+  resumeId       String
+  userId         String
+  jobId          String?
+  jobDescription String?          @db.Text
+  tone           String           @default("PROFESSIONAL")
+  status         ProcessingStatus @default(QUEUED)
+  queueJobId     String?          @unique
+  content        String?          @db.Text
+  fileKey        String?
+  model          String?
+  tokensIn       Int              @default(0)
+  tokensOut      Int              @default(0)
+  costUsd        Float            @default(0)
+  error          String?          @db.Text
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  resume Resume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+
+  @@index([resumeId, createdAt(sort: Desc)])
+  @@map("cover_letters")
 }
 
 model MatchAnalysis {
