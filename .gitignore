@@ -55,3 +55,4 @@ playwright/.cache
 
 # Local agent/tooling data
 .claude/
+.superpowers/
