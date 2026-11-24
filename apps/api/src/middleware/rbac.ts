@@ -4,9 +4,12 @@ import type { NextFunction, Request, Response } from 'express';
 import { ForbiddenError, UnauthorizedError } from '../shared/errors';
 import { userService } from '../modules/users/user.service';
 
-declare module 'express-serve-static-core' {
-  interface Request {
-    user?: { id: string; clerkId: string; role: Role; onboardedAt: Date | null };
+declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
+  namespace Express {
+    interface Request {
+      user?: { id: string; clerkId: string; role: Role; onboardedAt: Date | null };
+    }
   }
 }
 

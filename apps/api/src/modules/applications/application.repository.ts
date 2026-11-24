@@ -90,7 +90,7 @@ export const applicationRepository = {
 
   create: (
     userId: string,
-    data: Prisma.ApplicationUncheckedCreateInput,
+    data: Omit<Prisma.ApplicationUncheckedCreateInput, 'userId'>,
   ): Promise<Application & { events: ApplicationEvent[] }> =>
     prisma.application.create({
       data: {

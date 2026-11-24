@@ -8,6 +8,13 @@
     ".": "./src/index.ts",
     "./schemas": "./src/schemas/index.ts"
   },
+  "typesVersions": {
+    "*": {
+      "schemas": [
+        "./src/schemas/index.ts"
+      ]
+    }
+  },
   "scripts": {
     "lint": "eslint . --max-warnings 0",
     "lint:fix": "eslint . --fix",

@@ -5,6 +5,7 @@ import type {
 } from '@jobpilot/types/schemas';
 
 import { asyncHandler } from '../../shared/async-handler';
+import { param } from '../../shared/params';
 import { ForbiddenError, NotFoundError, UnauthorizedError } from '../../shared/errors';
 import { userService } from '../users/user.service';
 
@@ -47,7 +48,7 @@ export const matchController = {
 
   get: asyncHandler(async (req: Request, res: Response) => {
     const userId = await resolveUserId(req);
-    const analysis = await matchRepository.findById(req.params.id);
+    const analysis = await matchRepository.findById(param(req, 'id'));
     if (!analysis) throw new NotFoundError('MatchAnalysis');
     if (analysis.userId !== userId) throw new ForbiddenError();
     res.json({ success: true, data: analysis });

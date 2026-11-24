@@ -64,7 +64,7 @@ export const OnboardingForm = ({ defaultName }: { defaultName?: string }) => {
   });
 
   const next = async () => {
-    const fields = STEP_FIELDS[STEPS[step].id];
+    const fields = STEP_FIELDS[(STEPS[step] ?? STEPS[0]).id];
     const ok = await form.trigger(fields);
     if (ok) setStep((s) => Math.min(s + 1, STEPS.length - 1));
   };
@@ -85,7 +85,7 @@ export const OnboardingForm = ({ defaultName }: { defaultName?: string }) => {
   };
 
   const errors = form.formState.errors;
-  const current = STEPS[step];
+  const current = STEPS[step] ?? STEPS[0];
   const isLast = step === STEPS.length - 1;
 
   return (

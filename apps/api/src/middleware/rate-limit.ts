@@ -1,5 +1,5 @@
 import rateLimit from 'express-rate-limit';
-import RedisStore from 'rate-limit-redis';
+import RedisStore, { type RedisReply } from 'rate-limit-redis';
 
 import { env } from '../config/env';
 import { redis } from '../config/redis';
@@ -10,7 +10,7 @@ export const apiRateLimit = rateLimit({
   standardHeaders: 'draft-7',
   legacyHeaders: false,
   store: new RedisStore({
-    sendCommand: (...args: string[]) => redis.call(...(args as [string, ...string[]])) as Promise<unknown>,
+    sendCommand: (...args: string[]) => redis.call(...(args as [string, ...string[]])) as Promise<RedisReply>,
     prefix: 'rl:api:',
   }),
   message: {

@@ -4,10 +4,13 @@ import type { NextFunction, Request, Response } from 'express';
 
 import { logger } from '../config/logger';
 
-declare module 'express-serve-static-core' {
-  interface Request {
-    requestId: string;
-    log: typeof logger;
+declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
+  namespace Express {
+    interface Request {
+      requestId: string;
+      log: typeof logger;
+    }
   }
 }
 

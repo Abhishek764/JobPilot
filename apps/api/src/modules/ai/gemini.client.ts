@@ -16,6 +16,6 @@ const PRICING: Record<string, { input: number; output: number }> = {
 };
 
 export const estimateCostUsd = (model: string, tokensIn: number, tokensOut: number): number => {
-  const p = PRICING[model] ?? PRICING['gemini-2.0-flash-exp'];
+  const p = PRICING[model] ?? PRICING['gemini-2.0-flash-exp']!;
   return (tokensIn / 1_000_000) * p.input + (tokensOut / 1_000_000) * p.output;
 };

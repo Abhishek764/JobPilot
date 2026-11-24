@@ -1,6 +1,7 @@
 import type { Request, Response } from 'express';
 
 import { asyncHandler } from '../../shared/async-handler';
+import { param } from '../../shared/params';
 
 import { applicationService } from './application.service';
 
@@ -18,7 +19,7 @@ export const applicationController = {
   }),
 
   get: asyncHandler(async (req: Request, res: Response) => {
-    const app = await applicationService.get(getClerkId(req), req.params.id);
+    const app = await applicationService.get(getClerkId(req), param(req, 'id'));
     res.json({ success: true, data: app });
   }),
 
@@ -28,27 +29,27 @@ export const applicationController = {
   }),
 
   update: asyncHandler(async (req: Request, res: Response) => {
-    const app = await applicationService.update(getClerkId(req), req.params.id, req.body);
+    const app = await applicationService.update(getClerkId(req), param(req, 'id'), req.body);
     res.json({ success: true, data: app });
   }),
 
   move: asyncHandler(async (req: Request, res: Response) => {
-    const app = await applicationService.move(getClerkId(req), req.params.id, req.body);
+    const app = await applicationService.move(getClerkId(req), param(req, 'id'), req.body);
     res.json({ success: true, data: app });
   }),
 
   updateStatus: asyncHandler(async (req: Request, res: Response) => {
-    const app = await applicationService.updateStatus(getClerkId(req), req.params.id, req.body);
+    const app = await applicationService.updateStatus(getClerkId(req), param(req, 'id'), req.body);
     res.json({ success: true, data: app });
   }),
 
   events: asyncHandler(async (req: Request, res: Response) => {
-    const result = await applicationService.listEvents(getClerkId(req), req.params.id, req.query as never);
+    const result = await applicationService.listEvents(getClerkId(req), param(req, 'id'), req.query as never);
     res.json({ success: true, data: result });
   }),
 
   remove: asyncHandler(async (req: Request, res: Response) => {
-    await applicationService.delete(getClerkId(req), req.params.id);
+    await applicationService.delete(getClerkId(req), param(req, 'id'));
     res.status(204).send();
   }),
 };
