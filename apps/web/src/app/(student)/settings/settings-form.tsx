@@ -13,7 +13,7 @@ import { Select } from '@/components/ui/select';
 import { TagInput } from '@/components/ui/tag-input';
 import { Textarea } from '@/components/ui/textarea';
 
-import { updateProfileAction } from '../onboarding/actions';
+import { updateProfileAction } from '../../onboarding/actions';
 
 interface Props {
   defaults: UpdateProfileInput;

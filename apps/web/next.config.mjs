@@ -1,8 +1,14 @@
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const monorepoRoot = join(dirname(fileURLToPath(import.meta.url)), '../..');
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
   output: 'standalone',
+  outputFileTracingRoot: monorepoRoot,
   experimental: {
     typedRoutes: true,
   },

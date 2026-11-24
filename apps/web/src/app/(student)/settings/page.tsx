@@ -1,4 +1,3 @@
-import { UserButton } from '@clerk/nextjs';
 import type { ExperienceLevel } from '@jobpilot/types';
 import { redirect } from 'next/navigation';
 
@@ -35,13 +34,10 @@ export default async function SettingsPage() {
   if (!me.onboardedAt) redirect('/onboarding');
 
   return (
-    <main className="container max-w-3xl space-y-6 py-10">
-      <header className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-semibold tracking-tight">Settings</h1>
-          <p className="text-sm text-muted-foreground">Manage your profile + preferences.</p>
-        </div>
-        <UserButton />
+    <div className="max-w-3xl space-y-6">
+      <header>
+        <h1 className="text-3xl font-semibold tracking-tight">Settings</h1>
+        <p className="text-sm text-muted-foreground">Manage your profile + preferences.</p>
       </header>
 
       <Card>
@@ -65,6 +61,6 @@ export default async function SettingsPage() {
           />
         </CardContent>
       </Card>
-    </main>
+    </div>
   );
 }

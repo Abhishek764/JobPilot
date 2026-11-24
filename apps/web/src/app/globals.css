@@ -5,35 +5,84 @@
 @layer base {
   :root {
     --background: 0 0% 100%;
-    --foreground: 0 0% 3.9%;
+    --foreground: 230 25% 10%;
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 3.9%;
-    --primary: 0 0% 9%;
-    --primary-foreground: 0 0% 98%;
-    --muted: 0 0% 96.1%;
-    --muted-foreground: 0 0% 45.1%;
-    --border: 0 0% 89.8%;
-    --input: 0 0% 89.8%;
-    --ring: 0 0% 3.9%;
-    --radius: 0.5rem;
+    --card-foreground: 230 25% 10%;
+    --primary: 243 75% 59%;
+    --primary-foreground: 0 0% 100%;
+    --accent: 189 94% 43%;
+    --accent-foreground: 0 0% 100%;
+    --muted: 228 20% 95%;
+    --muted-foreground: 229 12% 42%;
+    --border: 228 18% 88%;
+    --input: 228 18% 88%;
+    --ring: 243 75% 59%;
+    --radius: 0.75rem;
   }
 
+  /* Command Center: dark, low-glare surfaces with an indigo→cyan accent. */
   .dark {
-    --background: 0 0% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 0 0% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 0 0% 9%;
-    --muted: 0 0% 14.9%;
-    --muted-foreground: 0 0% 63.9%;
-    --border: 0 0% 14.9%;
-    --input: 0 0% 14.9%;
-    --ring: 0 0% 83.1%;
+    --background: 232 30% 6%;
+    --foreground: 228 30% 96%;
+    --card: 232 26% 9%;
+    --card-foreground: 228 30% 96%;
+    --primary: 245 90% 70%;
+    --primary-foreground: 232 30% 8%;
+    --accent: 189 90% 55%;
+    --accent-foreground: 232 30% 8%;
+    --muted: 232 20% 14%;
+    --muted-foreground: 228 14% 66%;
+    --border: 232 18% 18%;
+    --input: 232 18% 20%;
+    --ring: 245 90% 70%;
   }
 }
 
 @layer base {
-  * { @apply border-border; }
-  body { @apply bg-background text-foreground; }
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+}
+
+@layer components {
+  /* Restrained glow behind the Command Center hero. */
+  .hero-glow {
+    background:
+      radial-gradient(60% 120% at 0% 0%, hsl(var(--primary) / 0.18), transparent 60%),
+      radial-gradient(50% 120% at 100% 0%, hsl(var(--accent) / 0.12), transparent 60%);
+  }
+
+  .rise-in {
+    animation: rise-in 420ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  }
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
