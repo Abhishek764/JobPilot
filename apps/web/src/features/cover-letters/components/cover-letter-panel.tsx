@@ -1,6 +1,6 @@
 'use client';
 
-import { COVER_LETTER_TONES, type CoverLetterTone } from '@jobpilot/types';
+import { COVER_LETTER_TONES, isStalePending, type CoverLetterTone } from '@jobpilot/types';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
@@ -94,6 +94,8 @@ export const CoverLetterPanel = ({ jobId }: { jobId: string | null }) => {
   const canGenerate = Boolean(resumeId) && (!needsPaste || pasted.trim().length >= 50);
   const current = letter.data;
   const pending = current ? isLetterPending(current.status) : false;
+  // A draft that hasn't moved in a while may be stuck; allow generating a fresh one.
+  const blocked = pending && current ? !isStalePending(current.updatedAt) : false;
 
   const copy = async () => {
     try {
@@ -151,19 +153,22 @@ export const CoverLetterPanel = ({ jobId }: { jobId: string | null }) => {
             ))}
           </Select>
         </div>
-        {needsPaste && (
-          <Textarea
-            aria-label="Job description"
-            value={pasted}
-            onChange={(e) => setPasted(e.target.value)}
-            rows={4}
-            placeholder="This application isn’t linked to a listing — paste the job description (50+ characters)."
-          />
-        )}
+        {/* Linked listings can still lack a description, so pasting stays available (optional) there. */}
+        <Textarea
+          aria-label="Job description"
+          value={pasted}
+          onChange={(e) => setPasted(e.target.value)}
+          rows={needsPaste ? 4 : 2}
+          placeholder={
+            needsPaste
+              ? 'This application isn’t linked to a listing — paste the job description (50+ characters).'
+              : 'Optional: paste the job description if the listing doesn’t include one.'
+          }
+        />
         <Button
           type="submit"
           size="sm"
-          disabled={!canGenerate || pending}
+          disabled={!canGenerate || blocked}
           loading={create.isPending}
         >
           {current ? 'Generate a new draft' : 'Generate cover letter'}

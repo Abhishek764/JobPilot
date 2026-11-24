@@ -26,3 +26,12 @@ describe('matchRepository.listForUser', () => {
     });
   });
 });
+
+describe('matchRepository.setQueued', () => {
+  it('records the queue job id without touching status (worker may already be done)', async () => {
+    const update = vi.fn().mockResolvedValue({});
+    (prisma.matchAnalysis as Record<string, unknown>).update = update;
+    await matchRepository.setQueued('m1', 'm1');
+    expect(update).toHaveBeenCalledWith({ where: { id: 'm1' }, data: { queueJobId: 'm1' } });
+  });
+});

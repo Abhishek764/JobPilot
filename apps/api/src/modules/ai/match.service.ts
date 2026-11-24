@@ -64,11 +64,18 @@ export const matchService = {
       jobDescription: resolved.jobDescription,
     });
 
-    await enqueueMatchAnalysis({
-      analysisId: analysis.id,
-      userId: req.userId,
-      track: req.track,
-    });
+    try {
+      await enqueueMatchAnalysis({
+        analysisId: analysis.id,
+        userId: req.userId,
+        track: req.track,
+      });
+    } catch (err) {
+      // Never leave a row QUEUED with no job behind it.
+      const message = err instanceof Error ? err.message : String(err);
+      await matchRepository.setFailed(analysis.id, `Could not queue analysis: ${message}`);
+      throw err;
+    }
 
     return matchRepository.setQueued(analysis.id, analysis.id);
   },
@@ -77,7 +84,11 @@ export const matchService = {
    * Executed by the queue worker. Loads inputs from DB, calls AI service, persists result.
    * Idempotent on retry: a COMPLETED record short-circuits.
    */
-  async processAnalysis(analysisId: string): Promise<MatchAnalysis> {
+  async processAnalysis(
+    analysisId: string,
+    opts: { finalAttempt?: boolean } = {},
+  ): Promise<MatchAnalysis> {
+    const finalAttempt = opts.finalAttempt ?? true;
     const analysis = await matchRepository.findById(analysisId);
     if (!analysis) throw new NotFoundError('MatchAnalysis');
     if (analysis.status === 'COMPLETED') return analysis;
@@ -132,8 +143,10 @@ export const matchService = {
       });
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      logger.error({ err: message, analysisId }, 'match analysis failed');
-      await matchRepository.setFailed(analysisId, message);
+      logger.error({ err: message, analysisId, finalAttempt }, 'match analysis failed');
+      // Between queue retries keep the row pending so the UI doesn't offer a duplicate run.
+      if (finalAttempt) await matchRepository.setFailed(analysisId, message);
+      else await matchRepository.setRetrying(analysisId, message);
       throw err;
     }
   },

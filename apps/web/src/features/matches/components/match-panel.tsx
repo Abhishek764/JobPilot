@@ -1,5 +1,6 @@
 'use client';
 
+import { isStalePending } from '@jobpilot/types';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
@@ -54,6 +55,8 @@ export const MatchPanel = ({
   const match = useMatch(activeId);
   const analysis = match.data;
   const pending = analysis ? isMatchPending(analysis.status) : false;
+  // A run that hasn't moved in a while may be stuck; let the student start a fresh one.
+  const blocked = pending && analysis ? !isStalePending(analysis.updatedAt) : false;
 
   const run = () =>
     start.mutate(
@@ -143,7 +146,7 @@ export const MatchPanel = ({
             type="submit"
             className="w-full"
             loading={start.isPending}
-            disabled={!resumeId || pending}
+            disabled={!resumeId || blocked}
           >
             {analysis ? 'Re-analyze my fit' : 'Analyze my fit'}
           </Button>

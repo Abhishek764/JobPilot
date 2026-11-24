@@ -1,6 +1,7 @@
 import {
   DeleteObjectCommand,
   GetObjectCommand,
+  HeadObjectCommand,
   PutObjectCommand,
   S3Client,
 } from '@aws-sdk/client-s3';
@@ -52,9 +53,7 @@ export const storage = {
       new GetObjectCommand({
         Bucket: bucket(),
         Key: key,
-        ...(filename
-          ? { ResponseContentDisposition: `attachment; filename="${filename}"` }
-          : {}),
+        ...(filename ? { ResponseContentDisposition: `attachment; filename="${filename}"` } : {}),
       }),
       { expiresIn: env.RESUME_URL_TTL_SECONDS },
     ),
@@ -70,6 +69,18 @@ export const storage = {
     const bytes = await res.Body?.transformToByteArray();
     if (!bytes) throw new AppError('Empty object', 502, 'STORAGE_EMPTY');
     return Buffer.from(bytes);
+  },
+
+  /** Stored size of an object, or null when it doesn't exist. Presigned PUTs don't bind size, so check here. */
+  headObject: async (key: string): Promise<{ size: number } | null> => {
+    try {
+      const res = await getClient().send(new HeadObjectCommand({ Bucket: bucket(), Key: key }));
+      return { size: res.ContentLength ?? 0 };
+    } catch (err) {
+      const status = (err as { $metadata?: { httpStatusCode?: number } }).$metadata?.httpStatusCode;
+      if (status === 404) return null;
+      throw err;
+    }
   },
 
   deleteObject: async (key: string): Promise<void> => {

@@ -30,6 +30,7 @@ export interface MatchAnalysis {
   error: string | null;
   completedAt: string | null;
   createdAt: string;
+  updatedAt: string;
 }
 
 const qs = (params: Record<string, string | undefined>) => {

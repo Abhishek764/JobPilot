@@ -10,7 +10,8 @@ export const createMatchAnalysisWorker = (): Worker<MatchAnalysisJob> => {
   const worker = new Worker<MatchAnalysisJob>(
     'ai-match',
     async (job) => {
-      const result = await matchService.processAnalysis(job.data.analysisId);
+      const finalAttempt = job.attemptsMade + 1 >= (job.opts.attempts ?? 1);
+      const result = await matchService.processAnalysis(job.data.analysisId, { finalAttempt });
       return {
         id: result.id,
         status: result.status,
@@ -27,7 +28,12 @@ export const createMatchAnalysisWorker = (): Worker<MatchAnalysisJob> => {
 
   worker.on('failed', (job, err) =>
     logger.error(
-      { id: job?.id, analysisId: job?.data.analysisId, err: err.message, attempts: job?.attemptsMade },
+      {
+        id: job?.id,
+        analysisId: job?.data.analysisId,
+        err: err.message,
+        attempts: job?.attemptsMade,
+      },
       'match analysis job failed',
     ),
   );

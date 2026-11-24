@@ -29,6 +29,7 @@ const storage = vi.hoisted(() => ({
   presignUpload: vi.fn(async (key: string) => `https://s3.test/put/${key}`),
   presignDownload: vi.fn(async (key: string) => `https://s3.test/get/${key}`),
   deleteObject: vi.fn(async () => undefined),
+  headObject: vi.fn(async (): Promise<{ size: number } | null> => ({ size: 2048 })),
 }));
 const queue = vi.hoisted(() => ({ enqueueResumeParse: vi.fn(async () => undefined) }));
 
@@ -222,5 +223,21 @@ describe('resume routes', () => {
     expect(res.status).toBe(204);
     expect(store.rows.has('resume_a')).toBe(false);
     expect(storage.deleteObject).toHaveBeenCalledWith('resumes/user_a/resume_a/source.pdf');
+  });
+
+  it('ingest rejects an object larger than the limit and removes it', async () => {
+    storage.headObject.mockResolvedValueOnce({ size: 50 * 1024 * 1024 });
+    const res = await call('POST', '/resume_a/ingest', 'clerk_a');
+    expect(res.status).toBe(400);
+    expect(queue.enqueueResumeParse).not.toHaveBeenCalled();
+    expect(storage.deleteObject).toHaveBeenCalledWith('resumes/user_a/resume_a/source.pdf');
+    expect(store.rows.get('resume_a')?.fileStatus).toBe('FAILED');
+  });
+
+  it('ingest rejects when the upload never reached storage', async () => {
+    storage.headObject.mockResolvedValueOnce(null);
+    const res = await call('POST', '/resume_a/ingest', 'clerk_a');
+    expect(res.status).toBe(400);
+    expect(queue.enqueueResumeParse).not.toHaveBeenCalled();
   });
 });

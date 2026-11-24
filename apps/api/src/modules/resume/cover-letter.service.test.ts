@@ -160,4 +160,39 @@ describe('coverLetterService', () => {
       });
     });
   });
+
+  describe('failure handling', () => {
+    it('marks the letter FAILED when it cannot be queued', async () => {
+      queue.enqueueCoverLetter.mockRejectedValue(new Error('redis down'));
+      await expect(
+        coverLetterService.create('clerk_1', 'resume_1', { jobId: 'job_1', tone: 'PROFESSIONAL' }),
+      ).rejects.toThrow('redis down');
+      expect(prisma.coverLetter.update).toHaveBeenLastCalledWith({
+        where: { id: 'cl_1' },
+        data: { status: 'FAILED', error: expect.stringContaining('redis down') },
+      });
+    });
+
+    it('stays pending between queue retries', async () => {
+      prisma.coverLetter.findUnique.mockResolvedValue({
+        id: 'cl_1',
+        userId: 'user_1',
+        resumeId: 'resume_1',
+        jobId: null,
+        jobDescription: JD,
+        tone: 'PROFESSIONAL',
+        status: 'QUEUED',
+      });
+      prisma.resume.findUnique.mockResolvedValue(resume);
+      prisma.user.findUnique.mockResolvedValue(null);
+      ai.generateCoverLetter.mockRejectedValue(new Error('quota'));
+      await expect(coverLetterService.process('cl_1', { finalAttempt: false })).rejects.toThrow(
+        'quota',
+      );
+      expect(prisma.coverLetter.update).toHaveBeenLastCalledWith({
+        where: { id: 'cl_1' },
+        data: { status: 'QUEUED', error: 'quota' },
+      });
+    });
+  });
 });

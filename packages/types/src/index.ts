@@ -2,6 +2,7 @@ export * from './domain/user';
 export * from './domain/application';
 export * from './domain/job';
 export * from './domain/resume';
+export * from './domain/processing';
 export * from './api/responses';
 export * from './api/dashboard';
 export * from './api/insights';

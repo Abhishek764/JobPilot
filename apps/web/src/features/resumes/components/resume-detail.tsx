@@ -1,5 +1,6 @@
 'use client';
 
+import { isStalePending } from '@jobpilot/types';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -53,11 +54,14 @@ const Actions = ({ resume }: { resume: Detail }) => {
             Download PDF
           </Button>
         )}
-        {resume.fileStatus === 'FAILED' && resume.fileKey && (
-          <Button size="sm" loading={retry.isPending} onClick={() => retry.mutate()}>
-            Retry parsing
-          </Button>
-        )}
+        {resume.fileKey &&
+          (resume.fileStatus === 'FAILED' ||
+            ((resume.fileStatus === 'UPLOADED' || resume.fileStatus === 'PARSING') &&
+              isStalePending(resume.updatedAt))) && (
+            <Button size="sm" loading={retry.isPending} onClick={() => retry.mutate()}>
+              Retry parsing
+            </Button>
+          )}
         {confirming ? (
           <>
             <Button

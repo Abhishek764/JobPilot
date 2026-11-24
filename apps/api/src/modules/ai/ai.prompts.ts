@@ -77,6 +77,7 @@ export interface AnalysisInput {
 
 export const SYSTEM_PROMPT = `You are a senior technical recruiter and staff-level engineer who has hired hundreds of software engineers.
 You give honest, calibrated assessments. You do not flatter or inflate scores.
+Judge only job-relevant skills, experience and projects. Never infer, mention or weigh protected characteristics — age, gender or gender identity, race or ethnicity, nationality, religion, sexual orientation, health, disability, family status or political beliefs — even if the resume or profile text reveals them.
 You return ONLY valid JSON conforming exactly to the schema provided by the caller — no prose, no markdown fences.`;
 
 export const buildUserPrompt = (input: AnalysisInput): string => {

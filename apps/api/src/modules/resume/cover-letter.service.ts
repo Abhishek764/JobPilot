@@ -54,7 +54,17 @@ export const coverLetterService = {
         status: 'QUEUED',
       },
     });
-    await enqueueCoverLetter({ coverLetterId: letter.id });
+    try {
+      await enqueueCoverLetter({ coverLetterId: letter.id });
+    } catch (err) {
+      // Never leave a row QUEUED with no job behind it.
+      const message = err instanceof Error ? err.message : String(err);
+      await prisma.coverLetter.update({
+        where: { id: letter.id },
+        data: { status: 'FAILED', error: `Could not queue cover letter: ${message}` },
+      });
+      throw err;
+    }
     return prisma.coverLetter.update({ where: { id: letter.id }, data: { queueJobId: letter.id } });
   },
 
@@ -82,7 +92,8 @@ export const coverLetterService = {
   },
 
   /** Worker body. Idempotent: COMPLETED letters short-circuit; failures are persisted then rethrown. */
-  async process(id: string): Promise<CoverLetter> {
+  async process(id: string, opts: { finalAttempt?: boolean } = {}): Promise<CoverLetter> {
+    const finalAttempt = opts.finalAttempt ?? true;
     const letter = await prisma.coverLetter.findUnique({ where: { id } });
     if (!letter) throw new NotFoundError('Cover letter');
     if (letter.status === 'COMPLETED') return letter;
@@ -125,9 +136,10 @@ export const coverLetterService = {
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       logger.error({ coverLetterId: id, err: message }, 'cover letter generation failed');
+      // Between queue retries keep the row pending so the UI doesn't offer a duplicate run.
       await prisma.coverLetter.update({
         where: { id },
-        data: { status: 'FAILED', error: message },
+        data: { status: finalAttempt ? 'FAILED' : 'QUEUED', error: message },
       });
       throw err;
     }

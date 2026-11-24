@@ -82,10 +82,11 @@ export const matchRepository = {
     ]).then(([rows, total]) => ({ rows, total }));
   },
 
+  /** Rows are created QUEUED; only record the job id so a fast worker's result isn't overwritten. */
   setQueued(id: string, queueJobId: string): Promise<MatchAnalysis> {
     return prisma.matchAnalysis.update({
       where: { id },
-      data: { status: 'QUEUED', queueJobId },
+      data: { queueJobId },
     });
   },
 
@@ -123,6 +124,11 @@ export const matchRepository = {
         completedAt: new Date(),
       },
     });
+  },
+
+  /** A failed attempt that the queue will retry: back to QUEUED, keep the error for visibility. */
+  setRetrying(id: string, error: string): Promise<MatchAnalysis> {
+    return prisma.matchAnalysis.update({ where: { id }, data: { status: 'QUEUED', error } });
   },
 
   setFailed(id: string, error: string): Promise<MatchAnalysis> {

@@ -10,7 +10,8 @@ export const createCoverLetterWorker = (): Worker<CoverLetterJob> => {
   const worker = new Worker<CoverLetterJob>(
     'resume-cover',
     async (job) => {
-      const letter = await coverLetterService.process(job.data.coverLetterId);
+      const finalAttempt = job.attemptsMade + 1 >= (job.opts.attempts ?? 1);
+      const letter = await coverLetterService.process(job.data.coverLetterId, { finalAttempt });
       return { id: letter.id, status: letter.status };
     },
     { connection: redis, prefix: env.BULL_PREFIX, concurrency: env.RESUME_AI_CONCURRENCY },

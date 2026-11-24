@@ -57,6 +57,20 @@ export const resumeService = {
     if (!resume) throw new NotFoundError('Resume');
     if (!resume.fileKey) throw new BadRequestError('Resume has no uploaded file');
 
+    // The presigned PUT can't enforce size, so verify what actually landed in storage.
+    const stored = await storage.headObject(resume.fileKey);
+    if (!stored) throw new BadRequestError('Upload not found in storage — please upload again');
+    if (stored.size > env.RESUME_MAX_BYTES) {
+      await storage.deleteObject(resume.fileKey).catch((err: unknown) => {
+        logger.warn({ resumeId: id, err: String(err) }, 'oversized resume delete failed');
+      });
+      await resumeRepository.update(id, {
+        fileStatus: 'FAILED',
+        parseError: 'File exceeds the maximum allowed size',
+      });
+      throw new BadRequestError('Resume exceeds the maximum allowed size');
+    }
+
     const updated = await resumeRepository.update(id, { fileStatus: 'UPLOADED', parseError: null });
     await enqueueResumeParse({ resumeId: id });
     return updated;

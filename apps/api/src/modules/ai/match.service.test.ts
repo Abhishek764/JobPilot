@@ -11,7 +11,12 @@ const repo = vi.hoisted(() => ({
   create: vi.fn(),
   setQueued: vi.fn(),
   findReusable: vi.fn(),
+  setFailed: vi.fn(),
+  setRetrying: vi.fn(),
+  findById: vi.fn(),
+  setRunning: vi.fn(),
 }));
+const ai = vi.hoisted(() => ({ analyzeMatch: vi.fn() }));
 const queue = vi.hoisted(() => ({ enqueueMatchAnalysis: vi.fn() }));
 
 vi.mock('@jobpilot/db', () => ({ prisma }));
@@ -19,7 +24,7 @@ vi.mock('../../config/logger', () => ({
   logger: { error: vi.fn(), info: vi.fn(), warn: vi.fn() },
 }));
 vi.mock('../queue/queues', () => queue);
-vi.mock('./ai.service', () => ({ aiService: { analyzeMatch: vi.fn() } }));
+vi.mock('./ai.service', () => ({ aiService: ai }));
 vi.mock('./match.repository', () => ({ matchRepository: repo }));
 
 import { matchService } from './match.service';
@@ -105,5 +110,49 @@ describe('matchService.createAndEnqueue', () => {
     expect(result).toBe(existing);
     expect(repo.create).not.toHaveBeenCalled();
     expect(queue.enqueueMatchAnalysis).not.toHaveBeenCalled();
+  });
+});
+
+describe('matchService failure handling', () => {
+  beforeEach(() => {
+    vi.resetAllMocks();
+    prisma.resume.findFirst.mockResolvedValue(ownedResume);
+    prisma.job.findUnique.mockResolvedValue({ id: 'job_1', description: JD });
+    repo.findReusable.mockResolvedValue(null);
+    repo.create.mockResolvedValue({ id: 'match_new' });
+  });
+
+  it('marks the analysis FAILED when it cannot be queued', async () => {
+    queue.enqueueMatchAnalysis.mockRejectedValue(new Error('redis down'));
+    await expect(matchService.createAndEnqueue(request)).rejects.toThrow('redis down');
+    expect(repo.setFailed).toHaveBeenCalledWith('match_new', expect.stringContaining('redis down'));
+  });
+
+  const queued = {
+    id: 'match_1',
+    userId: 'user_1',
+    resumeId: 'resume_1',
+    jobId: null,
+    jobDescription: JD,
+    track: 'BACKEND',
+    status: 'QUEUED',
+  };
+
+  it('keeps a retryable failure pending until the final attempt', async () => {
+    repo.findById.mockResolvedValue(queued);
+    prisma.resume.findUnique.mockResolvedValue(ownedResume);
+    prisma.user.findUnique.mockResolvedValue(null);
+    ai.analyzeMatch.mockRejectedValue(new Error('quota'));
+
+    await expect(matchService.processAnalysis('match_1', { finalAttempt: false })).rejects.toThrow(
+      'quota',
+    );
+    expect(repo.setRetrying).toHaveBeenCalledWith('match_1', 'quota');
+    expect(repo.setFailed).not.toHaveBeenCalled();
+
+    await expect(matchService.processAnalysis('match_1', { finalAttempt: true })).rejects.toThrow(
+      'quota',
+    );
+    expect(repo.setFailed).toHaveBeenCalledWith('match_1', 'quota');
   });
 });
