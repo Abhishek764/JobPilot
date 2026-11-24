@@ -62,6 +62,8 @@ export const matchController = {
       pageSize: q.pageSize,
       track: q.track,
       status: q.status,
+      jobId: q.jobId,
+      resumeId: q.resumeId,
     });
     res.json({
       success: true,

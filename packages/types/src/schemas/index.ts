@@ -240,6 +240,8 @@ export const CreateMatchAnalysisSchema = z
 export const ListMatchAnalysesQuerySchema = PaginationSchema.extend({
   track: MatchTrackSchema.optional(),
   status: MatchStatusSchema.optional(),
+  jobId: z.string().cuid().optional(),
+  resumeId: z.string().cuid().optional(),
 });
 
 export type MatchTrackInput = z.infer<typeof MatchTrackSchema>;

@@ -1,8 +1,9 @@
+import { prisma } from '@jobpilot/db';
 import type { Request, Response } from 'express';
 
 import { BadRequestError, NotFoundError } from '../../shared/errors';
 import { asyncHandler } from '../../shared/async-handler';
-import { prisma } from '@jobpilot/db';
+import { userService } from '../users/user.service';
 
 import { aiService } from './ai.service';
 
@@ -14,7 +15,10 @@ export const aiController = {
       jobDescription?: string;
     };
 
-    const resume = await prisma.resume.findUnique({ where: { id: resumeId } });
+    const clerkUserId = (req as Request & { clerkUserId: string }).clerkUserId;
+    const user = await userService.getByClerkId(clerkUserId);
+    // Scope by owner: another user's resume is indistinguishable from a missing one.
+    const resume = await prisma.resume.findFirst({ where: { id: resumeId, userId: user.id } });
     if (!resume) throw new NotFoundError('Resume');
 
     let jd = jobDescription;

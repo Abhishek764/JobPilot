@@ -3,13 +3,14 @@
 import type { Application, Job } from '@jobpilot/types';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
-import { useState, type ReactNode } from 'react';
+import { useState } from 'react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { applicationsApi } from '@/features/applications/api';
 import { applicationKeys } from '@/features/applications/keys';
+import { MatchPanel } from '@/features/matches/components/match-panel';
 import { useToken } from '@/lib/use-token';
 
 import { formatPosted, formatSalary, platformLabel } from '../format';
@@ -77,7 +78,7 @@ const TrackActions = ({ job }: { job: Job }) => {
   );
 };
 
-export const JobDetail = ({ id, matchSlot }: { id: string; matchSlot?: (job: Job) => ReactNode }) => {
+export const JobDetail = ({ id }: { id: string }) => {
   const { data: job, isPending, isError, error, refetch } = useJob(id);
 
   if (isPending) {
@@ -169,7 +170,9 @@ export const JobDetail = ({ id, matchSlot }: { id: string; matchSlot?: (job: Job
         </section>
       </div>
 
-      <aside className="space-y-4">{matchSlot?.(job)}</aside>
+      <aside className="space-y-4">
+        <MatchPanel job={job} />
+      </aside>
     </article>
   );
 };

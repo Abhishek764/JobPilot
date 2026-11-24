@@ -38,8 +38,23 @@ export const matchService = {
       where: { id: req.resumeId, userId: req.userId },
     });
     if (!resume) throw new NotFoundError('Resume');
+    if (!resume.content.trim()) {
+      throw new BadRequestError('Resume has no extracted text yet — wait for parsing to finish');
+    }
 
     const resolved = await ensureJobDescription(req.jobId, req.jobDescription);
+
+    // Reuse a finished result only when it was computed from today's inputs:
+    // the same job text and a resume that hasn't changed since.
+    const reusable = await matchRepository.findReusable({
+      userId: req.userId,
+      resumeId: req.resumeId,
+      jobId: resolved.jobId,
+      track: req.track,
+      jobDescription: resolved.jobDescription,
+      notBefore: resume.updatedAt,
+    });
+    if (reusable) return reusable;
 
     const analysis = await matchRepository.create({
       userId: req.userId,
