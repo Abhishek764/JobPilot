@@ -105,3 +105,55 @@ export const enqueueDetail = (data: ScrapeDetailJob) =>
 
 export const enqueueNormalize = (data: NormalizeJob) =>
   normalizeQueue.add(`normalize:${data.platform}`, data);
+
+// ── Resume optimization pipeline ────────────────────────────────────────────
+
+const resumeJobOpts: JobsOptions = {
+  attempts: 3,
+  backoff: { type: 'exponential', delay: 5_000 },
+  removeOnComplete: { age: 24 * 3_600, count: 1_000 },
+  removeOnFail: { age: 7 * 24 * 3_600, count: 1_000 },
+};
+
+export interface ResumeParseJob {
+  resumeId: string;
+}
+export interface ResumeAnalysisJob {
+  analysisId: string;
+}
+export interface ResumeVersionJob {
+  versionId: string;
+}
+export interface CoverLetterJob {
+  coverLetterId: string;
+}
+
+export const resumeParseQueue = new Queue<ResumeParseJob>('resume-parse', {
+  connection,
+  prefix,
+  defaultJobOptions: resumeJobOpts,
+});
+export const resumeAnalysisQueue = new Queue<ResumeAnalysisJob>('resume-analyze', {
+  connection,
+  prefix,
+  defaultJobOptions: resumeJobOpts,
+});
+export const resumeVersionQueue = new Queue<ResumeVersionJob>('resume-version', {
+  connection,
+  prefix,
+  defaultJobOptions: resumeJobOpts,
+});
+export const coverLetterQueue = new Queue<CoverLetterJob>('resume-cover', {
+  connection,
+  prefix,
+  defaultJobOptions: resumeJobOpts,
+});
+
+export const enqueueResumeParse = (data: ResumeParseJob) =>
+  resumeParseQueue.add('parse', data, { jobId: `parse:${data.resumeId}` });
+export const enqueueResumeAnalysis = (data: ResumeAnalysisJob) =>
+  resumeAnalysisQueue.add('analyze', data, { jobId: data.analysisId });
+export const enqueueResumeVersion = (data: ResumeVersionJob) =>
+  resumeVersionQueue.add('version', data, { jobId: data.versionId });
+export const enqueueCoverLetter = (data: CoverLetterJob) =>
+  coverLetterQueue.add('cover', data, { jobId: data.coverLetterId });

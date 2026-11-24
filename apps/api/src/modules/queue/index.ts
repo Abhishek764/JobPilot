@@ -5,6 +5,7 @@ import { logger } from '../../config/logger';
 
 import { createMatchAnalysisWorker } from './workers/match-analysis.worker';
 import { createNormalizeWorker } from './workers/normalize.worker';
+import { createResumeParseWorker } from './workers/resume-parse.worker';
 import { createSchedulerWorker } from './workers/scheduler.worker';
 import { createScrapeDetailWorker } from './workers/scrape-detail.worker';
 import { createScrapeListingWorker } from './workers/scrape-listing.worker';
@@ -18,6 +19,7 @@ export const startAllWorkers = (): Worker[] => {
     createScrapeDetailWorker(),
     createNormalizeWorker(),
     createMatchAnalysisWorker(),
+    createResumeParseWorker(),
   ];
   if (env.SCRAPER_SCHEDULER_ENABLED) {
     workers.push(createSchedulerWorker());
