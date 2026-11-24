@@ -20,12 +20,12 @@ jobRouter.get(
     const { items, total } = await jobService.list(query);
     res.json({
       success: true,
-      data: items,
-      meta: {
+      data: {
+        items,
         page: query.page,
         pageSize: query.pageSize,
         total,
-        totalPages: Math.ceil(total / query.pageSize),
+        totalPages: Math.max(1, Math.ceil(total / query.pageSize)),
       },
     });
   }),
