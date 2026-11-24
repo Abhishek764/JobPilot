@@ -1,5 +1,11 @@
 import type { Application, ApplicationEvent } from '@jobpilot/db';
-import type { Board, PaginatedResult } from '@jobpilot/types';
+import {
+  APPLICATION_STATUSES,
+  type ApplicationInsights,
+  type ApplicationStatus,
+  type Board,
+  type PaginatedResult,
+} from '@jobpilot/types';
 import type {
   BoardQuery,
   CreateApplicationInput,
@@ -95,6 +101,18 @@ export const applicationService = {
     const result = await applicationRepository.delete(userId, id);
     if (result.count === 0) throw new NotFoundError('Application');
     emitToUser(clerkUserId, 'application.deleted', { id });
+  },
+
+  async insights(clerkUserId: string, now: Date = new Date()): Promise<ApplicationInsights> {
+    const userId = await resolveUserId(clerkUserId);
+    const raw = await applicationRepository.insights(userId, now);
+    const byStatus = Object.fromEntries(APPLICATION_STATUSES.map((s) => [s, 0])) as Record<
+      ApplicationStatus,
+      number
+    >;
+    for (const { status, count } of raw.byStatus) byStatus[status as ApplicationStatus] = count;
+    const total = Object.values(byStatus).reduce((a, b) => a + b, 0);
+    return { total, byStatus, upcomingReminders: raw.upcomingReminders, recentActivity: raw.recentActivity };
   },
 
   async listEvents(

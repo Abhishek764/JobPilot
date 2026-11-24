@@ -144,6 +144,41 @@ export const applicationRepository = {
   delete: (userId: string, id: string): Promise<Prisma.BatchPayload> =>
     prisma.application.deleteMany({ where: { id, userId } }),
 
+  /** Raw aggregates for the insights panel; every query is scoped by userId. */
+  insights: async (userId: string, now: Date) => {
+    const horizon = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+    const [groups, upcomingReminders, events] = await Promise.all([
+      prisma.application.groupBy({ by: ['status'], where: { userId }, _count: { _all: true } }),
+      prisma.reminder.count({
+        where: { application: { userId }, status: 'PENDING', dueAt: { lte: horizon } },
+      }),
+      prisma.applicationEvent.findMany({
+        where: { application: { userId } },
+        orderBy: { createdAt: 'desc' },
+        take: 8,
+        select: {
+          id: true,
+          type: true,
+          createdAt: true,
+          applicationId: true,
+          application: { select: { company: true, title: true } },
+        },
+      }),
+    ]);
+    return {
+      byStatus: groups.map((g) => ({ status: g.status, count: g._count._all })),
+      upcomingReminders,
+      recentActivity: events.map((e) => ({
+        id: e.id,
+        type: e.type,
+        createdAt: e.createdAt,
+        applicationId: e.applicationId,
+        company: e.application.company,
+        title: e.application.title,
+      })),
+    };
+  },
+
   recordEvent: (
     applicationId: string,
     type: ApplicationEventType,

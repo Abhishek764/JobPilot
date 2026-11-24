@@ -4,6 +4,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 
 import { ApplicationDrawer } from './application-drawer';
+import { ApplicationInsights } from './application-insights';
 import { KanbanBoard } from './kanban-board';
 
 export const ApplicationsBoard = () => {
@@ -18,9 +19,12 @@ export const ApplicationsBoard = () => {
   };
 
   return (
-    <>
-      <KanbanBoard onSelect={setSelectedId} />
+    <div className="flex h-full flex-col gap-4">
+      <ApplicationInsights onOpen={setSelectedId} />
+      <div className="min-h-0 flex-1">
+        <KanbanBoard onSelect={setSelectedId} />
+      </div>
       <ApplicationDrawer id={selectedId} onClose={close} />
-    </>
+    </div>
   );
 };

@@ -18,6 +18,11 @@ export const applicationController = {
     res.json({ success: true, data: board });
   }),
 
+  insights: asyncHandler(async (req: Request, res: Response) => {
+    const data = await applicationService.insights(getClerkId(req));
+    res.json({ success: true, data });
+  }),
+
   get: asyncHandler(async (req: Request, res: Response) => {
     const app = await applicationService.get(getClerkId(req), param(req, 'id'));
     res.json({ success: true, data: app });

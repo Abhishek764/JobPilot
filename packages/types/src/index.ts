@@ -4,5 +4,6 @@ export * from './domain/job';
 export * from './domain/resume';
 export * from './api/responses';
 export * from './api/dashboard';
+export * from './api/insights';
 export * from './api/pagination';
 export * as Schemas from './schemas';

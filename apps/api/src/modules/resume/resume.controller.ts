@@ -3,6 +3,7 @@ import type { Request, Response } from 'express';
 import { asyncHandler } from '../../shared/async-handler';
 import { param } from '../../shared/params';
 
+import { coverLetterService } from './cover-letter.service';
 import { resumeService } from './resume.service';
 
 const clerkId = (req: Request): string => (req as Request & { clerkUserId: string }).clerkUserId;
@@ -31,6 +32,11 @@ export const resumeController = {
   download: asyncHandler(async (req: Request, res: Response) => {
     const url = await resumeService.downloadUrl(clerkId(req), param(req, 'id'));
     res.json({ success: true, data: { url } });
+  }),
+
+  createCoverLetter: asyncHandler(async (req: Request, res: Response) => {
+    const letter = await coverLetterService.create(clerkId(req), param(req, 'id'), req.body);
+    res.status(202).json({ success: true, data: letter });
   }),
 
   remove: asyncHandler(async (req: Request, res: Response) => {

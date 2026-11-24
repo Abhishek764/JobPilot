@@ -200,3 +200,12 @@ export const useDeleteReminder = (id: string) => {
     onSuccess: () => invalidateReminders(qc, id),
   });
 };
+
+/** Persisted counts by status, upcoming reminders and latest activity. */
+export const useApplicationInsights = () => {
+  const token = useToken();
+  return useQuery({
+    queryKey: applicationKeys.insights,
+    queryFn: async () => applicationsApi.insights(await token()),
+  });
+};

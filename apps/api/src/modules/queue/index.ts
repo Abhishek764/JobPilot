@@ -3,6 +3,7 @@ import type { Worker } from 'bullmq';
 import { env } from '../../config/env';
 import { logger } from '../../config/logger';
 
+import { createCoverLetterWorker } from './workers/cover-letter.worker';
 import { createMatchAnalysisWorker } from './workers/match-analysis.worker';
 import { createNormalizeWorker } from './workers/normalize.worker';
 import { createResumeParseWorker } from './workers/resume-parse.worker';
@@ -20,6 +21,7 @@ export const startAllWorkers = (): Worker[] => {
     createNormalizeWorker(),
     createMatchAnalysisWorker(),
     createResumeParseWorker(),
+    createCoverLetterWorker(),
   ];
   if (env.SCRAPER_SCHEDULER_ENABLED) {
     workers.push(createSchedulerWorker());

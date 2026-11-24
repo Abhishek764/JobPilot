@@ -180,6 +180,70 @@ export const aiService = {
     }
   },
 
+  /**
+   * Draft a cover letter grounded only in the resume and job text. Plain text out;
+   * the student reviews and edits before using it.
+   */
+  async generateCoverLetter(input: {
+    resumeContent: string;
+    jobDescription: string;
+    tone: 'PROFESSIONAL' | 'ENTHUSIASTIC' | 'CONCISE' | 'STORYTELLING';
+    candidateName: string | null;
+    company: string | null;
+    role: string | null;
+    userId?: string;
+  }): Promise<{ content: string; model: string; tokensIn: number; tokensOut: number; costUsd: number }> {
+    const modelName = env.GEMINI_RESUME_MODEL;
+    const toneGuide: Record<typeof input.tone, string> = {
+      PROFESSIONAL: 'polished and professional',
+      ENTHUSIASTIC: 'warm and genuinely enthusiastic, without hype',
+      CONCISE: 'brief and direct — under 200 words',
+      STORYTELLING: 'built around one concrete story from the resume',
+    };
+    const prompt = [
+      'Write a cover letter for a student or early-career candidate.',
+      `Tone: ${toneGuide[input.tone]}.`,
+      'Rules:',
+      '- Use ONLY experience, skills, projects and facts present in the RESUME. Never invent employers, metrics, degrees or skills.',
+      '- Connect 2-3 specific resume items to specific needs in the JOB DESCRIPTION.',
+      '- Do not mention or infer age, gender, race, religion, health, disability, nationality, family status or politics.',
+      '- No placeholders like [Your Name]; if a name or company is unknown, write around it.',
+      '- Return only the letter body as plain text with paragraphs separated by blank lines.',
+      input.candidateName ? `Candidate name: ${input.candidateName}` : '',
+      input.company ? `Company: ${input.company}` : '',
+      input.role ? `Role: ${input.role}` : '',
+      '',
+      'RESUME:',
+      truncate(input.resumeContent, env.AI_MAX_RESUME_CHARS),
+      '',
+      'JOB DESCRIPTION:',
+      truncate(input.jobDescription, env.AI_MAX_JOB_CHARS),
+    ]
+      .filter((line) => line !== '')
+      .join('\n');
+
+    const started = Date.now();
+    const result = await getModel(modelName).generateContent(prompt);
+    const content = result.response.text().trim();
+    if (content.length < 50) throw new UpstreamError('AI returned an empty cover letter');
+
+    const usage = result.response.usageMetadata;
+    const tokensIn = usage?.promptTokenCount ?? 0;
+    const tokensOut = usage?.candidatesTokenCount ?? 0;
+    const costUsd = estimateCostUsd(modelName, tokensIn, tokensOut);
+    await this.recordUsage({
+      userId: input.userId,
+      operation: 'cover-letter.generate',
+      model: modelName,
+      tokensIn,
+      tokensOut,
+      cached: false,
+      costUsd,
+      durationMs: Date.now() - started,
+    });
+    return { content, model: modelName, tokensIn, tokensOut, costUsd };
+  },
+
   // Legacy Gemini-backed helpers kept for backwards compatibility with existing controllers.
   async matchResumeToJob(resumeContent: string, jobDescription: string): Promise<JobMatch> {
     const model = getModel();

@@ -1,5 +1,6 @@
 import type {
   Application,
+  ApplicationInsights,
   ApplicationEvent,
   ApplicationNote,
   Board,
@@ -26,6 +27,9 @@ export const applicationsApi = {
     apiFetch<Board>(`/applications/board${qs({ search: filters.search, source: filters.source })}`, {
       token,
     }),
+
+  insights: (token: string | null): Promise<ApplicationInsights> =>
+    apiFetch<ApplicationInsights>('/applications/insights', { token }),
 
   get: (token: string | null, id: string): Promise<Application> =>
     apiFetch<Application>(`/applications/${id}`, { token }),

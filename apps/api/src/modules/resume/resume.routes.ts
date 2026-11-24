@@ -1,4 +1,8 @@
-import { ListResumesQuerySchema, UploadResumeSchema } from '@jobpilot/types/schemas';
+import {
+  CreateCoverLetterSchema,
+  ListResumesQuerySchema,
+  UploadResumeSchema,
+} from '@jobpilot/types/schemas';
 import { Router } from 'express';
 
 import { attachUserId, requireAuth } from '../../middleware/auth';
@@ -16,3 +20,4 @@ resumeRouter.get('/:id', resumeController.get);
 resumeRouter.post('/:id/ingest', resumeController.ingest);
 resumeRouter.get('/:id/download', resumeController.download);
 resumeRouter.delete('/:id', resumeController.remove);
+resumeRouter.post('/:id/cover-letters', validate(CreateCoverLetterSchema), resumeController.createCoverLetter);

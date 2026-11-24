@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { CoverLetterPanel } from '@/features/cover-letters/components/cover-letter-panel';
 
 import {
   useApplication,
@@ -150,6 +151,12 @@ export const ApplicationDrawer = ({ id, onClose }: Props) => {
                 ) : null}
               </dl>
             </header>
+
+            {/* Cover letter */}
+            <section className="space-y-2">
+              <h3 className="text-sm font-semibold">Cover letter</h3>
+              <CoverLetterPanel jobId={app.jobId} />
+            </section>
 
             {/* Reminders */}
             <section className="space-y-2">
