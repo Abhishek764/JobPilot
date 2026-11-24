@@ -3,7 +3,10 @@
   "version": "0.0.0",
   "private": true,
   "main": "./index.js",
-  "files": ["eslint", "tsconfig"],
+  "files": [
+    "eslint",
+    "tsconfig"
+  ],
   "exports": {
     "./eslint/base": "./eslint/base.js",
     "./eslint/node": "./eslint/node.js",

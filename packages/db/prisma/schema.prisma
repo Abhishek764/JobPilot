@@ -1,5 +1,7 @@
 generator client {
   provider = "prisma-client-js"
+  // Docker build stage and runtime image use different OpenSSL versions.
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
 }
 
 datasource db {

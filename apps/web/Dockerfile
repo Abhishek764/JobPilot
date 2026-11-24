@@ -14,6 +14,7 @@ COPY packages/types/package.json packages/types/
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
 
 FROM deps AS build
+COPY turbo.json ./
 COPY packages packages
 COPY apps/web apps/web
 ARG NEXT_PUBLIC_API_URL
@@ -22,7 +23,7 @@ ARG NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL \
     NEXT_PUBLIC_APP_URL=$NEXT_PUBLIC_APP_URL \
     NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=$NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
-RUN pnpm --filter @jobpilot/web build
+RUN pnpm turbo run build --filter=@jobpilot/web
 
 FROM node:${NODE_VERSION} AS runtime
 WORKDIR /app

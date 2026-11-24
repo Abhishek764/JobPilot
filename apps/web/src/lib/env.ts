@@ -11,12 +11,15 @@ const ServerEnvSchema = ClientEnvSchema.extend({
 });
 
 const isServer = typeof window === 'undefined';
+// Server secrets are runtime-only; `next build` must not need them baked into the image.
+const isBuild = process.env.NEXT_PHASE === 'phase-production-build';
+const validateServer = isServer && !isBuild;
 
-const parsed = (isServer ? ServerEnvSchema : ClientEnvSchema).safeParse({
+const parsed = (validateServer ? ServerEnvSchema : ClientEnvSchema).safeParse({
   NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
   NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
-  ...(isServer ? { CLERK_SECRET_KEY: process.env.CLERK_SECRET_KEY } : {}),
+  ...(validateServer ? { CLERK_SECRET_KEY: process.env.CLERK_SECRET_KEY } : {}),
 });
 
 if (!parsed.success) {
