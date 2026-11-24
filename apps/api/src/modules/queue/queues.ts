@@ -149,8 +149,10 @@ export const coverLetterQueue = new Queue<CoverLetterJob>('resume-cover', {
   defaultJobOptions: resumeJobOpts,
 });
 
+// Per-attempt id: a retained failed job with a fixed id would make BullMQ drop a retry.
+// The parser short-circuits PARSED resumes, so duplicate attempts are harmless.
 export const enqueueResumeParse = (data: ResumeParseJob) =>
-  resumeParseQueue.add('parse', data, { jobId: `parse:${data.resumeId}` });
+  resumeParseQueue.add('parse', data, { jobId: `parse:${data.resumeId}:${Date.now()}` });
 export const enqueueResumeAnalysis = (data: ResumeAnalysisJob) =>
   resumeAnalysisQueue.add('analyze', data, { jobId: data.analysisId });
 export const enqueueResumeVersion = (data: ResumeVersionJob) =>
