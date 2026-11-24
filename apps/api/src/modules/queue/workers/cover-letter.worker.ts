@@ -16,7 +16,10 @@ export const createCoverLetterWorker = (): Worker<CoverLetterJob> => {
     { connection: redis, prefix: env.BULL_PREFIX, concurrency: env.RESUME_AI_CONCURRENCY },
   );
   worker.on('failed', (job, err) =>
-    logger.error({ coverLetterId: job?.data.coverLetterId, err: err.message }, 'cover letter job failed'),
+    logger.error(
+      { coverLetterId: job?.data.coverLetterId, err: err.message },
+      'cover letter job failed',
+    ),
   );
   return worker;
 };

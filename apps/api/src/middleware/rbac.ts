@@ -27,7 +27,11 @@ const loadUser = async (req: Request): Promise<NonNullable<Request['user']>> => 
   return req.user;
 };
 
-export const hydrateUser = async (req: Request, _res: Response, next: NextFunction): Promise<void> => {
+export const hydrateUser = async (
+  req: Request,
+  _res: Response,
+  next: NextFunction,
+): Promise<void> => {
   try {
     await loadUser(req);
     next();
@@ -36,7 +40,8 @@ export const hydrateUser = async (req: Request, _res: Response, next: NextFuncti
   }
 };
 
-export const requireRole = (...allowed: Role[]) =>
+export const requireRole =
+  (...allowed: Role[]) =>
   async (req: Request, _res: Response, next: NextFunction): Promise<void> => {
     try {
       const user = await loadUser(req);

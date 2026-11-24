@@ -24,9 +24,12 @@ const qs = (params: Record<string, string | undefined>): string => {
 
 export const applicationsApi = {
   board: (token: string | null, filters: BoardFilters): Promise<Board> =>
-    apiFetch<Board>(`/applications/board${qs({ search: filters.search, source: filters.source })}`, {
-      token,
-    }),
+    apiFetch<Board>(
+      `/applications/board${qs({ search: filters.search, source: filters.source })}`,
+      {
+        token,
+      },
+    ),
 
   insights: (token: string | null): Promise<ApplicationInsights> =>
     apiFetch<ApplicationInsights>('/applications/insights', { token }),
@@ -38,7 +41,11 @@ export const applicationsApi = {
     apiFetch<Application>('/applications', { method: 'POST', body, token }),
 
   setStatus: (token: string | null, id: string, status: string): Promise<Application> =>
-    apiFetch<Application>(`/applications/${id}/status`, { method: 'PATCH', body: { status }, token }),
+    apiFetch<Application>(`/applications/${id}/status`, {
+      method: 'PATCH',
+      body: { status },
+      token,
+    }),
 
   update: (token: string | null, id: string, body: Partial<Application>): Promise<Application> =>
     apiFetch<Application>(`/applications/${id}`, { method: 'PATCH', body, token }),
@@ -60,7 +67,11 @@ export const applicationsApi = {
     list: (token: string | null, id: string): Promise<ApplicationNote[]> =>
       apiFetch<ApplicationNote[]>(`/applications/${id}/notes`, { token }),
     create: (token: string | null, id: string, body: string): Promise<ApplicationNote> =>
-      apiFetch<ApplicationNote>(`/applications/${id}/notes`, { method: 'POST', body: { body }, token }),
+      apiFetch<ApplicationNote>(`/applications/${id}/notes`, {
+        method: 'POST',
+        body: { body },
+        token,
+      }),
     remove: (token: string | null, id: string, noteId: string): Promise<void> =>
       apiFetch<void>(`/applications/${id}/notes/${noteId}`, { method: 'DELETE', token }),
   },
@@ -68,7 +79,11 @@ export const applicationsApi = {
   reminders: {
     list: (token: string | null, id: string): Promise<Reminder[]> =>
       apiFetch<Reminder[]>(`/applications/${id}/reminders`, { token }),
-    create: (token: string | null, id: string, body: { title: string; dueAt: string }): Promise<Reminder> =>
+    create: (
+      token: string | null,
+      id: string,
+      body: { title: string; dueAt: string },
+    ): Promise<Reminder> =>
       apiFetch<Reminder>(`/applications/${id}/reminders`, { method: 'POST', body, token }),
     complete: (token: string | null, id: string, reminderId: string): Promise<Reminder> =>
       apiFetch<Reminder>(`/applications/${id}/reminders/${reminderId}`, {

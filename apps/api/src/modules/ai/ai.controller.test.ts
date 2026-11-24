@@ -31,7 +31,11 @@ describe('aiController.analyzeResume', () => {
     vi.resetAllMocks();
     users.getByClerkId.mockResolvedValue({ id: 'user_b' });
     prisma.resume.findFirst.mockResolvedValue(null);
-    prisma.resume.findUnique.mockResolvedValue({ id: 'resume_a', userId: 'user_a', content: 'secret' });
+    prisma.resume.findUnique.mockResolvedValue({
+      id: 'resume_a',
+      userId: 'user_a',
+      content: 'secret',
+    });
   });
 
   it('does not analyze a resume owned by another user', async () => {
@@ -40,7 +44,9 @@ describe('aiController.analyzeResume', () => {
       jobDescription: 'x'.repeat(60),
     });
     expect(next).toHaveBeenCalledWith(expect.any(NotFoundError));
-    expect(prisma.resume.findFirst).toHaveBeenCalledWith({ where: { id: 'resume_a', userId: 'user_b' } });
+    expect(prisma.resume.findFirst).toHaveBeenCalledWith({
+      where: { id: 'resume_a', userId: 'user_b' },
+    });
     expect(ai.matchResumeToJob).not.toHaveBeenCalled();
     expect(json).not.toHaveBeenCalled();
   });

@@ -22,7 +22,11 @@ applicationRouter.use(requireAuth, attachUserId);
 
 applicationRouter.get('/insights', applicationController.insights);
 applicationRouter.get('/board', validate(BoardQuerySchema, 'query'), applicationController.board);
-applicationRouter.get('/', validate(ListApplicationsQuerySchema, 'query'), applicationController.list);
+applicationRouter.get(
+  '/',
+  validate(ListApplicationsQuerySchema, 'query'),
+  applicationController.list,
+);
 applicationRouter.post('/', validate(CreateApplicationSchema), applicationController.create);
 
 applicationRouter.get('/:id', applicationController.get);
@@ -30,7 +34,11 @@ applicationRouter.patch('/:id', validate(UpdateApplicationSchema), applicationCo
 applicationRouter.delete('/:id', applicationController.remove);
 
 applicationRouter.patch('/:id/move', validate(MoveApplicationSchema), applicationController.move);
-applicationRouter.patch('/:id/status', validate(UpdateStatusSchema), applicationController.updateStatus);
+applicationRouter.patch(
+  '/:id/status',
+  validate(UpdateStatusSchema),
+  applicationController.updateStatus,
+);
 applicationRouter.get(
   '/:id/events',
   validate(ListEventsQuerySchema, 'query'),

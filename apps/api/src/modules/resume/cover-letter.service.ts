@@ -20,7 +20,8 @@ const resolveJobDescription = async (
     const job = await prisma.job.findUnique({ where: { id: input.jobId } });
     if (!job) throw new NotFoundError('Job');
     const jd = job.description?.trim() || input.jobDescription?.trim();
-    if (!jd) throw new BadRequestError('This job has no description; paste one to generate a letter');
+    if (!jd)
+      throw new BadRequestError('This job has no description; paste one to generate a letter');
     return { jobId: job.id, jobDescription: jd };
   }
   const jd = input.jobDescription?.trim();
@@ -30,7 +31,11 @@ const resolveJobDescription = async (
 
 export const coverLetterService = {
   /** Validate ownership + inputs, persist a QUEUED letter, and hand generation to the worker. */
-  async create(clerkUserId: string, resumeId: string, input: CreateCoverLetterRequest): Promise<CoverLetter> {
+  async create(
+    clerkUserId: string,
+    resumeId: string,
+    input: CreateCoverLetterRequest,
+  ): Promise<CoverLetter> {
     const user = await userService.getByClerkId(clerkUserId);
     const resume = await prisma.resume.findFirst({ where: { id: resumeId, userId: user.id } });
     if (!resume) throw new NotFoundError('Resume');
@@ -40,7 +45,14 @@ export const coverLetterService = {
 
     const { jobId, jobDescription } = await resolveJobDescription(input);
     const letter = await prisma.coverLetter.create({
-      data: { userId: user.id, resumeId, jobId, jobDescription, tone: input.tone, status: 'QUEUED' },
+      data: {
+        userId: user.id,
+        resumeId,
+        jobId,
+        jobDescription,
+        tone: input.tone,
+        status: 'QUEUED',
+      },
     });
     await enqueueCoverLetter({ coverLetterId: letter.id });
     return prisma.coverLetter.update({ where: { id: letter.id }, data: { queueJobId: letter.id } });
@@ -53,7 +65,10 @@ export const coverLetterService = {
     return letter;
   },
 
-  async list(clerkUserId: string, filter: { jobId?: string; resumeId?: string }): Promise<CoverLetter[]> {
+  async list(
+    clerkUserId: string,
+    filter: { jobId?: string; resumeId?: string },
+  ): Promise<CoverLetter[]> {
     const user = await userService.getByClerkId(clerkUserId);
     return prisma.coverLetter.findMany({
       where: {
@@ -74,7 +89,10 @@ export const coverLetterService = {
 
     const resume = await prisma.resume.findUnique({ where: { id: letter.resumeId } });
     if (!resume) {
-      return prisma.coverLetter.update({ where: { id }, data: { status: 'FAILED', error: 'Resume no longer exists' } });
+      return prisma.coverLetter.update({
+        where: { id },
+        data: { status: 'FAILED', error: 'Resume no longer exists' },
+      });
     }
     const [user, job] = await Promise.all([
       prisma.user.findUnique({ where: { id: letter.userId } }),
@@ -107,7 +125,10 @@ export const coverLetterService = {
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       logger.error({ coverLetterId: id, err: message }, 'cover letter generation failed');
-      await prisma.coverLetter.update({ where: { id }, data: { status: 'FAILED', error: message } });
+      await prisma.coverLetter.update({
+        where: { id },
+        data: { status: 'FAILED', error: message },
+      });
       throw err;
     }
   },

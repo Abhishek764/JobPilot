@@ -11,7 +11,10 @@ import { useMatchesForResume } from '../hooks';
 export const ResumeMatches = ({ resumeId }: { resumeId: string }) => {
   const { data, isPending, isError, refetch } = useMatchesForResume(resumeId);
   return (
-    <section aria-labelledby="rm-h" className="space-y-3 rounded-xl border border-border bg-card/70 p-5">
+    <section
+      aria-labelledby="rm-h"
+      className="border-border bg-card/70 space-y-3 rounded-xl border p-5"
+    >
       <h2 id="rm-h" className="font-semibold tracking-tight">
         Job matches
       </h2>
@@ -25,7 +28,7 @@ export const ResumeMatches = ({ resumeId }: { resumeId: string }) => {
           </Button>
         </div>
       ) : data.length === 0 ? (
-        <p className="text-sm text-muted-foreground">
+        <p className="text-muted-foreground text-sm">
           No matches yet.{' '}
           <Link href="/jobs" className="text-primary underline-offset-4 hover:underline">
             Find a job
@@ -39,18 +42,22 @@ export const ResumeMatches = ({ resumeId }: { resumeId: string }) => {
               {m.jobId ? (
                 <Link
                   href={`/jobs/${m.jobId}`}
-                  className="flex items-center justify-between rounded-lg border border-border p-3 text-sm hover:border-primary/50"
+                  className="border-border hover:border-primary/50 flex items-center justify-between rounded-lg border p-3 text-sm"
                 >
                   <span>{new Date(m.createdAt).toLocaleDateString()}</span>
                   <span className="font-medium tabular-nums">
-                    {m.status === 'COMPLETED' ? `${m.compatibility ?? '—'} fit` : m.status.toLowerCase()}
+                    {m.status === 'COMPLETED'
+                      ? `${m.compatibility ?? '—'} fit`
+                      : m.status.toLowerCase()}
                   </span>
                 </Link>
               ) : (
-                <div className="flex items-center justify-between rounded-lg border border-border p-3 text-sm">
+                <div className="border-border flex items-center justify-between rounded-lg border p-3 text-sm">
                   <span>Pasted job · {new Date(m.createdAt).toLocaleDateString()}</span>
                   <span className="font-medium tabular-nums">
-                    {m.status === 'COMPLETED' ? `${m.compatibility ?? '—'} fit` : m.status.toLowerCase()}
+                    {m.status === 'COMPLETED'
+                      ? `${m.compatibility ?? '—'} fit`
+                      : m.status.toLowerCase()}
                   </span>
                 </div>
               )}

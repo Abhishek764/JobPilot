@@ -6,14 +6,22 @@ const prisma = vi.hoisted(() => ({
   resume: { findFirst: vi.fn(), findUnique: vi.fn() },
   job: { findUnique: vi.fn() },
   user: { findUnique: vi.fn() },
-  coverLetter: { create: vi.fn(), update: vi.fn(), findFirst: vi.fn(), findUnique: vi.fn(), findMany: vi.fn() },
+  coverLetter: {
+    create: vi.fn(),
+    update: vi.fn(),
+    findFirst: vi.fn(),
+    findUnique: vi.fn(),
+    findMany: vi.fn(),
+  },
 }));
 const queue = vi.hoisted(() => ({ enqueueCoverLetter: vi.fn() }));
 const ai = vi.hoisted(() => ({ generateCoverLetter: vi.fn(), recordUsage: vi.fn() }));
 const users = vi.hoisted(() => ({ getByClerkId: vi.fn() }));
 
 vi.mock('@jobpilot/db', () => ({ prisma }));
-vi.mock('../../config/logger', () => ({ logger: { error: vi.fn(), warn: vi.fn(), info: vi.fn() } }));
+vi.mock('../../config/logger', () => ({
+  logger: { error: vi.fn(), warn: vi.fn(), info: vi.fn() },
+}));
 vi.mock('../queue/queues', () => queue);
 vi.mock('../ai/ai.service', () => ({ aiService: ai }));
 vi.mock('../users/user.service', () => ({ userService: users }));
@@ -21,18 +29,31 @@ vi.mock('../users/user.service', () => ({ userService: users }));
 import { coverLetterService } from './cover-letter.service';
 
 const JD = 'Frontend intern to build accessible React interfaces with TypeScript and testing.';
-const resume = { id: 'resume_1', userId: 'user_1', content: 'React and TypeScript projects; accessibility work.' };
+const resume = {
+  id: 'resume_1',
+  userId: 'user_1',
+  content: 'React and TypeScript projects; accessibility work.',
+};
 
 describe('coverLetterService', () => {
   beforeEach(() => {
     vi.resetAllMocks();
     users.getByClerkId.mockResolvedValue({ id: 'user_1' });
-    prisma.resume.findFirst.mockImplementation(async ({ where }: { where: { id: string; userId: string } }) =>
-      where.id === 'resume_1' && where.userId === 'user_1' ? resume : null,
+    prisma.resume.findFirst.mockImplementation(
+      async ({ where }: { where: { id: string; userId: string } }) =>
+        where.id === 'resume_1' && where.userId === 'user_1' ? resume : null,
     );
-    prisma.job.findUnique.mockResolvedValue({ id: 'job_1', description: JD, title: 'Frontend Intern', company: 'Acme' });
+    prisma.job.findUnique.mockResolvedValue({
+      id: 'job_1',
+      description: JD,
+      title: 'Frontend Intern',
+      company: 'Acme',
+    });
     prisma.coverLetter.create.mockResolvedValue({ id: 'cl_1', status: 'QUEUED' });
-    prisma.coverLetter.update.mockImplementation(async ({ data }: { data: object }) => ({ id: 'cl_1', ...data }));
+    prisma.coverLetter.update.mockImplementation(async ({ data }: { data: object }) => ({
+      id: 'cl_1',
+      ...data,
+    }));
   });
 
   describe('create', () => {
@@ -72,8 +93,12 @@ describe('coverLetterService', () => {
   describe('get', () => {
     it('is scoped to the owner', async () => {
       prisma.coverLetter.findFirst.mockResolvedValue(null);
-      await expect(coverLetterService.get('clerk_1', 'cl_other')).rejects.toBeInstanceOf(NotFoundError);
-      expect(prisma.coverLetter.findFirst).toHaveBeenCalledWith({ where: { id: 'cl_other', userId: 'user_1' } });
+      await expect(coverLetterService.get('clerk_1', 'cl_other')).rejects.toBeInstanceOf(
+        NotFoundError,
+      );
+      expect(prisma.coverLetter.findFirst).toHaveBeenCalledWith({
+        where: { id: 'cl_other', userId: 'user_1' },
+      });
     });
   });
 
@@ -107,11 +132,19 @@ describe('coverLetterService', () => {
       });
       await coverLetterService.process('cl_1');
       expect(ai.generateCoverLetter).toHaveBeenCalledWith(
-        expect.objectContaining({ resumeContent: resume.content, jobDescription: JD, tone: 'PROFESSIONAL' }),
+        expect.objectContaining({
+          resumeContent: resume.content,
+          jobDescription: JD,
+          tone: 'PROFESSIONAL',
+        }),
       );
       expect(prisma.coverLetter.update).toHaveBeenLastCalledWith({
         where: { id: 'cl_1' },
-        data: expect.objectContaining({ status: 'COMPLETED', content: 'Dear Acme team, …', model: 'gemini-test' }),
+        data: expect.objectContaining({
+          status: 'COMPLETED',
+          content: 'Dear Acme team, …',
+          model: 'gemini-test',
+        }),
       });
     });
 

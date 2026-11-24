@@ -23,7 +23,10 @@ coverLetterRouter.get(
   '/',
   validate(ListCoverLettersQuerySchema, 'query'),
   asyncHandler(async (req: Request, res: Response) => {
-    const data = await coverLetterService.list(clerkId(req), req.query as z.infer<typeof ListCoverLettersQuerySchema>);
+    const data = await coverLetterService.list(
+      clerkId(req),
+      req.query as z.infer<typeof ListCoverLettersQuerySchema>,
+    );
     res.json({ success: true, data });
   }),
 );

@@ -55,7 +55,14 @@ export const matchRepository = {
 
   listForUser(
     userId: string,
-    opts: { page: number; pageSize: number; track?: MatchTrack; status?: MatchStatus; jobId?: string; resumeId?: string },
+    opts: {
+      page: number;
+      pageSize: number;
+      track?: MatchTrack;
+      status?: MatchStatus;
+      jobId?: string;
+      resumeId?: string;
+    },
   ): Promise<{ rows: MatchAnalysis[]; total: number }> {
     const where: Prisma.MatchAnalysisWhereInput = {
       userId,

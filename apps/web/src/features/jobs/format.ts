@@ -18,7 +18,9 @@ const PERIOD_SUFFIX: Record<string, string> = {
 };
 
 /** Only renders salary the source actually published; returns null otherwise. */
-export const formatSalary = (job: Pick<Job, 'salaryMin' | 'salaryMax' | 'currency' | 'salaryPeriod'>) => {
+export const formatSalary = (
+  job: Pick<Job, 'salaryMin' | 'salaryMax' | 'currency' | 'salaryPeriod'>,
+) => {
   const { salaryMin, salaryMax, currency, salaryPeriod } = job;
   if (salaryMin == null && salaryMax == null) return null;
   const fmt = (n: number) =>
@@ -32,7 +34,7 @@ export const formatSalary = (job: Pick<Job, 'salaryMin' | 'salaryMax' | 'currenc
     salaryMin != null && salaryMax != null && salaryMin !== salaryMax
       ? `${fmt(salaryMin)} – ${fmt(salaryMax)}`
       : fmt((salaryMin ?? salaryMax)!);
-  return `${range}${salaryPeriod ? PERIOD_SUFFIX[salaryPeriod] ?? '' : ''}`;
+  return `${range}${salaryPeriod ? (PERIOD_SUFFIX[salaryPeriod] ?? '') : ''}`;
 };
 
 export const formatPosted = (postedAt: Date | string | null): string => {

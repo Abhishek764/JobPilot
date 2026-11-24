@@ -71,13 +71,23 @@ export const dashboardRepository = {
         where: { userId, status: { in: ['QUEUED', 'RUNNING', 'FAILED'] } },
         orderBy: { createdAt: 'desc' },
         take: ATTENTION_LIMIT,
-        select: { id: true, status: true, resumeId: true, job: { select: { id: true, title: true } } },
+        select: {
+          id: true,
+          status: true,
+          resumeId: true,
+          job: { select: { id: true, title: true } },
+        },
       }),
       prisma.reminder.findMany({
         where: pendingReminderWhere,
         orderBy: { dueAt: 'asc' },
         take: ATTENTION_LIMIT,
-        select: { id: true, title: true, applicationId: true, application: { select: { company: true } } },
+        select: {
+          id: true,
+          title: true,
+          applicationId: true,
+          application: { select: { company: true } },
+        },
       }),
       prisma.resume.findMany({
         where: { userId, fileStatus: { in: ['UPLOADED', 'PARSING', 'FAILED'] } },

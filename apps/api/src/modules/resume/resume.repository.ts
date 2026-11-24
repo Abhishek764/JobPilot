@@ -66,8 +66,10 @@ export const resumeRepository = {
       prisma.resumeVersion.findMany({ where: { resumeId: id }, select: { fileKey: true } }),
       prisma.coverLetter.findMany({ where: { resumeId: id }, select: { fileKey: true } }),
     ]);
-    return [resume?.fileKey, ...versions.map((v) => v.fileKey), ...covers.map((c) => c.fileKey)].filter(
-      (k): k is string => Boolean(k),
-    );
+    return [
+      resume?.fileKey,
+      ...versions.map((v) => v.fileKey),
+      ...covers.map((c) => c.fileKey),
+    ].filter((k): k is string => Boolean(k));
   },
 };

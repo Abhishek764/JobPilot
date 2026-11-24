@@ -87,10 +87,7 @@ export const matchService = {
       return matchRepository.setFailed(analysisId, 'Resume no longer exists');
     }
     const user = await prisma.user.findUnique({ where: { id: analysis.userId } });
-    const userSkills = [
-      ...(user?.skills ?? []),
-      ...(resume.parsedSkills ?? []),
-    ];
+    const userSkills = [...(user?.skills ?? []), ...(resume.parsedSkills ?? [])];
 
     let jobDescription = analysis.jobDescription ?? '';
     let jobSkillsHint: string[] = [];

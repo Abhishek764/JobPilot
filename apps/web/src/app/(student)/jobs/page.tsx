@@ -10,7 +10,7 @@ export default function JobsPage() {
     <div className="space-y-6">
       <header>
         <h1 className="text-3xl font-semibold tracking-tight">Find jobs</h1>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-muted-foreground text-sm">
           Real listings collected from LinkedIn, Wellfound, Indeed and Naukri.
         </p>
       </header>

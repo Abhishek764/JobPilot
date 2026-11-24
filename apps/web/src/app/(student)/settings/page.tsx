@@ -37,13 +37,15 @@ export default async function SettingsPage() {
     <div className="max-w-3xl space-y-6">
       <header>
         <h1 className="text-3xl font-semibold tracking-tight">Settings</h1>
-        <p className="text-sm text-muted-foreground">Manage your profile + preferences.</p>
+        <p className="text-muted-foreground text-sm">Manage your profile + preferences.</p>
       </header>
 
       <Card>
         <CardHeader>
           <CardTitle>Profile</CardTitle>
-          <CardDescription>Updates apply immediately to AI matching + recommendations.</CardDescription>
+          <CardDescription>
+            Updates apply immediately to AI matching + recommendations.
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <SettingsForm

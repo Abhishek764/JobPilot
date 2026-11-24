@@ -45,9 +45,16 @@ const TrackActions = ({ job }: { job: Job }) => {
 
   if (tracked) {
     return (
-      <div className="rounded-lg border border-emerald-500/40 bg-emerald-500/5 p-4 text-sm" role="status">
-        Added to your board as <strong>{tracked.status === 'APPLIED' ? 'Applied' : 'Saved'}</strong>.{' '}
-        <Link className="text-primary underline-offset-4 hover:underline" href={`/applications?open=${tracked.id}`}>
+      <div
+        className="rounded-lg border border-emerald-500/40 bg-emerald-500/5 p-4 text-sm"
+        role="status"
+      >
+        Added to your board as <strong>{tracked.status === 'APPLIED' ? 'Applied' : 'Saved'}</strong>
+        .{' '}
+        <Link
+          className="text-primary underline-offset-4 hover:underline"
+          href={`/applications?open=${tracked.id}`}
+        >
           Open in Applications
         </Link>
       </div>
@@ -62,10 +69,20 @@ const TrackActions = ({ job }: { job: Job }) => {
             Apply on {platformLabel(job.sourcePlatform)} ↗
           </a>
         </Button>
-        <Button variant="outline" loading={track.isPending && track.variables === 'SAVED'} disabled={track.isPending} onClick={() => track.mutate('SAVED')}>
+        <Button
+          variant="outline"
+          loading={track.isPending && track.variables === 'SAVED'}
+          disabled={track.isPending}
+          onClick={() => track.mutate('SAVED')}
+        >
           Save to board
         </Button>
-        <Button variant="secondary" loading={track.isPending && track.variables === 'APPLIED'} disabled={track.isPending} onClick={() => track.mutate('APPLIED')}>
+        <Button
+          variant="secondary"
+          loading={track.isPending && track.variables === 'APPLIED'}
+          disabled={track.isPending}
+          onClick={() => track.mutate('APPLIED')}
+        >
           I applied
         </Button>
       </div>
@@ -95,7 +112,7 @@ export const JobDetail = ({ id }: { id: string }) => {
     return (
       <div role="alert" className="rounded-xl border border-red-500/40 bg-red-500/5 p-6 text-sm">
         <p className="font-medium">Couldn’t load this job.</p>
-        <p className="mt-1 text-muted-foreground">{error.message}</p>
+        <p className="text-muted-foreground mt-1">{error.message}</p>
         <div className="mt-4 flex gap-2">
           <Button size="sm" variant="outline" onClick={() => void refetch()}>
             Try again
@@ -120,8 +137,8 @@ export const JobDetail = ({ id }: { id: string }) => {
             {!job.isActive && <Badge variant="destructive">No longer listed</Badge>}
           </div>
           <h1 className="text-3xl font-semibold tracking-tight">{job.title}</h1>
-          <p className="text-lg text-muted-foreground">{job.company}</p>
-          <dl className="flex flex-wrap gap-x-6 gap-y-1 text-sm text-muted-foreground">
+          <p className="text-muted-foreground text-lg">{job.company}</p>
+          <dl className="text-muted-foreground flex flex-wrap gap-x-6 gap-y-1 text-sm">
             <div>
               <dt className="sr-only">Location</dt>
               <dd>{job.location ?? 'Location not listed'}</dd>
@@ -133,7 +150,7 @@ export const JobDetail = ({ id }: { id: string }) => {
             {salary && (
               <div>
                 <dt className="sr-only">Salary</dt>
-                <dd className="font-medium text-foreground">{salary}</dd>
+                <dd className="text-foreground font-medium">{salary}</dd>
               </div>
             )}
           </dl>
@@ -143,7 +160,10 @@ export const JobDetail = ({ id }: { id: string }) => {
 
         {job.skills.length > 0 && (
           <section aria-labelledby="skills-h">
-            <h2 id="skills-h" className="mb-2 text-sm font-medium uppercase tracking-wide text-muted-foreground">
+            <h2
+              id="skills-h"
+              className="text-muted-foreground mb-2 text-sm font-medium uppercase tracking-wide"
+            >
               Skills listed
             </h2>
             <div className="flex flex-wrap gap-1.5">
@@ -157,13 +177,18 @@ export const JobDetail = ({ id }: { id: string }) => {
         )}
 
         <section aria-labelledby="desc-h">
-          <h2 id="desc-h" className="mb-2 text-sm font-medium uppercase tracking-wide text-muted-foreground">
+          <h2
+            id="desc-h"
+            className="text-muted-foreground mb-2 text-sm font-medium uppercase tracking-wide"
+          >
             Description
           </h2>
           {job.description ? (
-            <div className="whitespace-pre-line text-sm leading-relaxed text-foreground/90">{job.description}</div>
+            <div className="text-foreground/90 whitespace-pre-line text-sm leading-relaxed">
+              {job.description}
+            </div>
           ) : (
-            <p className="text-sm text-muted-foreground">
+            <p className="text-muted-foreground text-sm">
               The source didn’t include a description. Open the original posting for full details.
             </p>
           )}

@@ -2,12 +2,7 @@
 
 import { useAuth } from '@clerk/nextjs';
 import type { Application, Board } from '@jobpilot/types';
-import {
-  useMutation,
-  useQuery,
-  useQueryClient,
-  type QueryClient,
-} from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
 
 import { applicationsApi, type BoardFilters } from './api';

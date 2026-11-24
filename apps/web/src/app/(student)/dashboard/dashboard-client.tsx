@@ -22,19 +22,36 @@ const ATTENTION_LABEL: Record<DashboardAttentionItem['kind'], string> = {
 };
 
 /** Attention links come from our API; still only follow same-origin app paths. */
-const safeHref = (href: string) => (href.startsWith('/') && !href.startsWith('//') ? href : '/dashboard');
+const safeHref = (href: string) =>
+  href.startsWith('/') && !href.startsWith('//') ? href : '/dashboard';
 
 const scoreTone = (score: number | null) =>
-  score == null ? 'text-muted-foreground' : score >= 80 ? 'text-emerald-400' : score >= 60 ? 'text-amber-300' : 'text-rose-300';
+  score == null
+    ? 'text-muted-foreground'
+    : score >= 80
+      ? 'text-emerald-400'
+      : score >= 60
+        ? 'text-amber-300'
+        : 'text-rose-300';
 
-const Metric = ({ label, value, hint, href }: { label: string; value: string; hint: string; href: string }) => (
+const Metric = ({
+  label,
+  value,
+  hint,
+  href,
+}: {
+  label: string;
+  value: string;
+  hint: string;
+  href: string;
+}) => (
   <Link
     href={href}
-    className="rise-in rounded-xl border border-border bg-card/70 p-5 transition-colors hover:border-primary/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+    className="rise-in border-border bg-card/70 hover:border-primary/50 focus-visible:ring-ring rounded-xl border p-5 transition-colors focus-visible:outline-none focus-visible:ring-2"
   >
-    <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</p>
+    <p className="text-muted-foreground text-xs font-medium uppercase tracking-wide">{label}</p>
     <p className="mt-2 text-3xl font-semibold tabular-nums tracking-tight">{value}</p>
-    <p className="mt-1 text-xs text-muted-foreground">{hint}</p>
+    <p className="text-muted-foreground mt-1 text-xs">{hint}</p>
   </Link>
 );
 
@@ -42,11 +59,14 @@ const SearchHero = () => {
   const router = useRouter();
   const [q, setQ] = useState('');
   return (
-    <section className="hero-glow rounded-2xl border border-border p-6 md:p-10" aria-labelledby="hero-h">
+    <section
+      className="hero-glow border-border rounded-2xl border p-6 md:p-10"
+      aria-labelledby="hero-h"
+    >
       <h1 id="hero-h" className="text-3xl font-semibold tracking-tight md:text-4xl">
         What do you want to work on next?
       </h1>
-      <p className="mt-2 max-w-xl text-sm text-muted-foreground">
+      <p className="text-muted-foreground mt-2 max-w-xl text-sm">
         Search real listings, then check your fit against your own resume before you apply.
       </p>
       <form
@@ -66,7 +86,7 @@ const SearchHero = () => {
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder="e.g. backend intern, data analyst, React"
-          className="h-12 bg-background/60 text-base"
+          className="bg-background/60 h-12 text-base"
         />
         <Button type="submit" size="lg" className="h-12">
           Search jobs
@@ -77,7 +97,11 @@ const SearchHero = () => {
 };
 
 const SummarySkeleton = () => (
-  <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4" aria-busy="true" aria-label="Loading summary">
+  <div
+    className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
+    aria-busy="true"
+    aria-label="Loading summary"
+  >
     {['a', 'b', 'c', 'd'].map((k) => (
       <Skeleton key={k} className="h-28 rounded-xl" />
     ))}
@@ -89,7 +113,12 @@ const Sections = ({ summary }: { summary: DashboardSummary }) => {
   return (
     <>
       <section aria-label="Your numbers" className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Metric label="Strong matches" value={String(metrics.strongMatches)} hint="Fit score 80 or higher" href="/jobs" />
+        <Metric
+          label="Strong matches"
+          value={String(metrics.strongMatches)}
+          hint="Fit score 80 or higher"
+          href="/jobs"
+        />
         <Metric
           label="Active applications"
           value={String(metrics.activeApplications)}
@@ -99,7 +128,11 @@ const Sections = ({ summary }: { summary: DashboardSummary }) => {
         <Metric
           label="Resume health"
           value={metrics.resumeHealth == null ? 'Not analyzed' : `${metrics.resumeHealth}/100`}
-          hint={metrics.resumeHealth == null ? 'Upload and analyze a resume' : 'Latest completed analysis'}
+          hint={
+            metrics.resumeHealth == null
+              ? 'Upload and analyze a resume'
+              : 'Latest completed analysis'
+          }
           href="/resume"
         />
         <Metric
@@ -116,14 +149,15 @@ const Sections = ({ summary }: { summary: DashboardSummary }) => {
             <h2 id="rec-h" className="text-lg font-semibold tracking-tight">
               Your best recent matches
             </h2>
-            <Link href="/jobs" className="text-sm text-muted-foreground hover:text-foreground">
+            <Link href="/jobs" className="text-muted-foreground hover:text-foreground text-sm">
               Browse all jobs →
             </Link>
           </div>
           {recommendedJobs.length === 0 ? (
-            <div className="rounded-xl border border-dashed border-border p-8 text-sm text-muted-foreground">
-              No match analyses yet. Open any job and choose <strong className="text-foreground">Analyze my fit</strong>{' '}
-              to see how your resume lines up.
+            <div className="border-border text-muted-foreground rounded-xl border border-dashed p-8 text-sm">
+              No match analyses yet. Open any job and choose{' '}
+              <strong className="text-foreground">Analyze my fit</strong> to see how your resume
+              lines up.
             </div>
           ) : (
             <ul className="space-y-2">
@@ -131,16 +165,22 @@ const Sections = ({ summary }: { summary: DashboardSummary }) => {
                 <li key={job.id}>
                   <Link
                     href={`/jobs/${job.id}`}
-                    className="flex items-center justify-between gap-4 rounded-xl border border-border bg-card/70 p-4 transition-colors hover:border-primary/50"
+                    className="border-border bg-card/70 hover:border-primary/50 flex items-center justify-between gap-4 rounded-xl border p-4 transition-colors"
                   >
                     <div className="min-w-0">
                       <p className="truncate font-medium">{job.title}</p>
-                      <p className="truncate text-sm text-muted-foreground">
+                      <p className="text-muted-foreground truncate text-sm">
                         {job.company}
-                        {job.location ? ` · ${job.location}` : ''} · {platformLabel(job.sourcePlatform)}
+                        {job.location ? ` · ${job.location}` : ''} ·{' '}
+                        {platformLabel(job.sourcePlatform)}
                       </p>
                     </div>
-                    <span className={cn('shrink-0 text-xl font-semibold tabular-nums', scoreTone(job.compatibility))}>
+                    <span
+                      className={cn(
+                        'shrink-0 text-xl font-semibold tabular-nums',
+                        scoreTone(job.compatibility),
+                      )}
+                    >
                       {job.compatibility ?? '—'}
                       <span className="sr-only"> fit score</span>
                     </span>
@@ -156,7 +196,7 @@ const Sections = ({ summary }: { summary: DashboardSummary }) => {
             Needs your attention
           </h2>
           {attentionItems.length === 0 ? (
-            <div className="rounded-xl border border-dashed border-border p-8 text-sm text-muted-foreground">
+            <div className="border-border text-muted-foreground rounded-xl border border-dashed p-8 text-sm">
               You’re all caught up.
             </div>
           ) : (
@@ -165,7 +205,7 @@ const Sections = ({ summary }: { summary: DashboardSummary }) => {
                 <li key={`${item.kind}-${item.id}`}>
                   <Link
                     href={safeHref(item.href)}
-                    className="flex items-center gap-3 rounded-lg border border-border bg-card/70 p-3 text-sm transition-colors hover:border-primary/50"
+                    className="border-border bg-card/70 hover:border-primary/50 flex items-center gap-3 rounded-lg border p-3 text-sm transition-colors"
                   >
                     <Badge variant="outline" className="shrink-0">
                       {ATTENTION_LABEL[item.kind]}
@@ -198,8 +238,14 @@ export const DashboardClient = ({ initial }: { initial?: DashboardSummary }) => 
       ) : isError ? (
         <div role="alert" className="rounded-xl border border-red-500/40 bg-red-500/5 p-6 text-sm">
           <p className="font-medium">Couldn’t load your summary.</p>
-          <p className="mt-1 text-muted-foreground">{error.message}</p>
-          <Button className="mt-4" size="sm" variant="outline" loading={isRefetching} onClick={() => void refetch()}>
+          <p className="text-muted-foreground mt-1">{error.message}</p>
+          <Button
+            className="mt-4"
+            size="sm"
+            variant="outline"
+            loading={isRefetching}
+            onClick={() => void refetch()}
+          >
             Try again
           </Button>
         </div>

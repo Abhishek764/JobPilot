@@ -1,7 +1,12 @@
 import type { AddressInfo } from 'node:net';
 import type { Server } from 'node:http';
 
-import express, { type ErrorRequestHandler, type NextFunction, type Request, type Response } from 'express';
+import express, {
+  type ErrorRequestHandler,
+  type NextFunction,
+  type Request,
+  type Response,
+} from 'express';
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ZodError } from 'zod';
 
@@ -28,12 +33,16 @@ const storage = vi.hoisted(() => ({
 const queue = vi.hoisted(() => ({ enqueueResumeParse: vi.fn(async () => undefined) }));
 
 vi.mock('../../config/env', () => ({ env: { RESUME_MAX_BYTES: 10 * 1024 * 1024 } }));
-vi.mock('../../config/logger', () => ({ logger: { warn: vi.fn(), error: vi.fn(), info: vi.fn() } }));
+vi.mock('../../config/logger', () => ({
+  logger: { warn: vi.fn(), error: vi.fn(), info: vi.fn() },
+}));
 vi.mock('../storage/s3', () => ({ storage }));
 vi.mock('../queue/queues', () => queue);
 vi.mock('../users/user.service', () => ({
   userService: {
-    getByClerkId: vi.fn(async (clerkId: string) => ({ id: clerkId === 'clerk_a' ? 'user_a' : 'user_b' })),
+    getByClerkId: vi.fn(async (clerkId: string) => ({
+      id: clerkId === 'clerk_a' ? 'user_a' : 'user_b',
+    })),
   },
 }));
 // Tests authenticate with an `x-test-user` header instead of a Clerk session.
@@ -146,7 +155,11 @@ describe('resume routes', () => {
     });
     expect(res.status).toBe(201);
     const { data } = await res.json();
-    expect(data.resume).toMatchObject({ id: 'resume_new', userId: 'user_a', fileStatus: 'PENDING' });
+    expect(data.resume).toMatchObject({
+      id: 'resume_new',
+      userId: 'user_a',
+      fileStatus: 'PENDING',
+    });
     expect(data.upload).toMatchObject({
       method: 'PUT',
       url: 'https://s3.test/put/resumes/user_a/resume_new/source.pdf',

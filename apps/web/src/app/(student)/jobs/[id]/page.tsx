@@ -6,7 +6,7 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
   const { id } = await params;
   return (
     <div className="space-y-6">
-      <Link href="/jobs" className="text-sm text-muted-foreground hover:text-foreground">
+      <Link href="/jobs" className="text-muted-foreground hover:text-foreground text-sm">
         ← All jobs
       </Link>
       <JobDetail id={id} />

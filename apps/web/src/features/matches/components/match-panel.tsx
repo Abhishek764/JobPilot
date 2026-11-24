@@ -56,19 +56,27 @@ export const MatchPanel = ({
   const pending = analysis ? isMatchPending(analysis.status) : false;
 
   const run = () =>
-    start.mutate({ resumeId, jobId: job.id, track }, { onSuccess: (created) => setActiveId(created.id) });
+    start.mutate(
+      { resumeId, jobId: job.id, track },
+      { onSuccess: (created) => setActiveId(created.id) },
+    );
 
   return (
-    <section aria-labelledby="fit-h" className="space-y-4 rounded-xl border border-border bg-card/70 p-5">
+    <section
+      aria-labelledby="fit-h"
+      className="border-border bg-card/70 space-y-4 rounded-xl border p-5"
+    >
       <div>
         <h2 id="fit-h" className="font-semibold tracking-tight">
           Your fit for this role
         </h2>
-        <p className="text-xs text-muted-foreground">Compares your resume with this job description.</p>
+        <p className="text-muted-foreground text-xs">
+          Compares your resume with this job description.
+        </p>
       </div>
 
       {!job.description ? (
-        <p className="text-sm text-muted-foreground">
+        <p className="text-muted-foreground text-sm">
           This listing has no description, so there’s nothing reliable to compare against.
         </p>
       ) : resumes.isPending ? (
@@ -76,12 +84,17 @@ export const MatchPanel = ({
       ) : resumes.isError ? (
         <div role="alert" className="text-sm">
           <p>Couldn’t load your resumes.</p>
-          <Button size="sm" variant="outline" className="mt-2" onClick={() => void resumes.refetch()}>
+          <Button
+            size="sm"
+            variant="outline"
+            className="mt-2"
+            onClick={() => void resumes.refetch()}
+          >
             Try again
           </Button>
         </div>
       ) : parsed.length === 0 ? (
-        <p className="text-sm text-muted-foreground">
+        <p className="text-muted-foreground text-sm">
           Upload a resume in the{' '}
           <Link href="/resume" className="text-primary underline-offset-4 hover:underline">
             Resume Lab
@@ -100,7 +113,11 @@ export const MatchPanel = ({
             <label className="text-xs font-medium" htmlFor="match-resume">
               Resume
             </label>
-            <Select id="match-resume" value={resumeId} onChange={(e) => setResumeId(e.target.value)}>
+            <Select
+              id="match-resume"
+              value={resumeId}
+              onChange={(e) => setResumeId(e.target.value)}
+            >
               {parsed.map((r) => (
                 <option key={r.id} value={r.id}>
                   {r.title}
@@ -110,7 +127,11 @@ export const MatchPanel = ({
             <label className="text-xs font-medium" htmlFor="match-track">
               Role track
             </label>
-            <Select id="match-track" value={track} onChange={(e) => setTrack(e.target.value as MatchTrack)}>
+            <Select
+              id="match-track"
+              value={track}
+              onChange={(e) => setTrack(e.target.value as MatchTrack)}
+            >
               {MATCH_TRACKS.map((t) => (
                 <option key={t} value={t}>
                   {TRACK_LABEL[t]}
@@ -118,7 +139,12 @@ export const MatchPanel = ({
               ))}
             </Select>
           </div>
-          <Button type="submit" className="w-full" loading={start.isPending} disabled={!resumeId || pending}>
+          <Button
+            type="submit"
+            className="w-full"
+            loading={start.isPending}
+            disabled={!resumeId || pending}
+          >
             {analysis ? 'Re-analyze my fit' : 'Analyze my fit'}
           </Button>
           {start.isError && (
@@ -132,12 +158,17 @@ export const MatchPanel = ({
       {match.isPending && activeId ? (
         <Skeleton className="h-40 w-full" />
       ) : analysis ? (
-        <div className="border-t border-border pt-4" aria-live="polite">
+        <div className="border-border border-t pt-4" aria-live="polite">
           {pending ? (
             <div className="space-y-2 text-sm">
               <p>
-                <span aria-hidden className="mr-2 inline-block h-2 w-2 animate-pulse rounded-full bg-primary" />
-                {analysis.status === 'QUEUED' ? 'Queued — starting shortly…' : 'Analyzing your resume against this job…'}
+                <span
+                  aria-hidden
+                  className="bg-primary mr-2 inline-block h-2 w-2 animate-pulse rounded-full"
+                />
+                {analysis.status === 'QUEUED'
+                  ? 'Queued — starting shortly…'
+                  : 'Analyzing your resume against this job…'}
               </p>
               <Button size="sm" variant="ghost" onClick={() => void match.refetch()}>
                 Refresh
@@ -145,8 +176,16 @@ export const MatchPanel = ({
             </div>
           ) : analysis.status === 'FAILED' ? (
             <div role="alert" className="space-y-2 text-sm">
-              <p className="text-rose-300">The analysis failed{analysis.error ? `: ${analysis.error}` : '.'}</p>
-              <Button size="sm" variant="outline" disabled={!resumeId} onClick={run} loading={start.isPending}>
+              <p className="text-rose-300">
+                The analysis failed{analysis.error ? `: ${analysis.error}` : '.'}
+              </p>
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={!resumeId}
+                onClick={run}
+                loading={start.isPending}
+              >
                 Retry
               </Button>
             </div>

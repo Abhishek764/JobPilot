@@ -105,10 +105,10 @@ export const CoverLetterPanel = ({ jobId }: { jobId: string | null }) => {
     }
   };
 
-  if (resumes.isPending) return <p className="text-sm text-muted-foreground">Loading resumes…</p>;
+  if (resumes.isPending) return <p className="text-muted-foreground text-sm">Loading resumes…</p>;
   if (parsed.length === 0) {
     return (
-      <p className="text-sm text-muted-foreground">
+      <p className="text-muted-foreground text-sm">
         Upload a resume in the{' '}
         <Link href="/resume" className="text-primary underline-offset-4 hover:underline">
           Resume Lab
@@ -128,14 +128,22 @@ export const CoverLetterPanel = ({ jobId }: { jobId: string | null }) => {
         }}
       >
         <div className="grid grid-cols-2 gap-2">
-          <Select aria-label="Resume" value={resumeId} onChange={(e) => setResumeId(e.target.value)}>
+          <Select
+            aria-label="Resume"
+            value={resumeId}
+            onChange={(e) => setResumeId(e.target.value)}
+          >
             {parsed.map((r) => (
               <option key={r.id} value={r.id}>
                 {r.title}
               </option>
             ))}
           </Select>
-          <Select aria-label="Tone" value={tone} onChange={(e) => setTone(e.target.value as CoverLetterTone)}>
+          <Select
+            aria-label="Tone"
+            value={tone}
+            onChange={(e) => setTone(e.target.value as CoverLetterTone)}
+          >
             {COVER_LETTER_TONES.map((t) => (
               <option key={t} value={t}>
                 {TONE_LABEL[t]}
@@ -152,7 +160,12 @@ export const CoverLetterPanel = ({ jobId }: { jobId: string | null }) => {
             placeholder="This application isn’t linked to a listing — paste the job description (50+ characters)."
           />
         )}
-        <Button type="submit" size="sm" disabled={!canGenerate || pending} loading={create.isPending}>
+        <Button
+          type="submit"
+          size="sm"
+          disabled={!canGenerate || pending}
+          loading={create.isPending}
+        >
           {current ? 'Generate a new draft' : 'Generate cover letter'}
         </Button>
         {create.isError && (
@@ -165,17 +178,31 @@ export const CoverLetterPanel = ({ jobId }: { jobId: string | null }) => {
       {current && (
         <div aria-live="polite" className="space-y-2">
           {pending ? (
-            <p className="text-sm text-muted-foreground">
-              <span aria-hidden className="mr-2 inline-block h-2 w-2 animate-pulse rounded-full bg-primary" />
+            <p className="text-muted-foreground text-sm">
+              <span
+                aria-hidden
+                className="bg-primary mr-2 inline-block h-2 w-2 animate-pulse rounded-full"
+              />
               Writing your draft…{' '}
-              <button type="button" className="underline underline-offset-4" onClick={() => void letter.refetch()}>
+              <button
+                type="button"
+                className="underline underline-offset-4"
+                onClick={() => void letter.refetch()}
+              >
                 Refresh
               </button>
             </p>
           ) : current.status === 'FAILED' ? (
             <div role="alert" className="space-y-2 text-sm">
-              <p className="text-rose-300">Generation failed{current.error ? `: ${current.error}` : '.'}</p>
-              <Button size="sm" variant="outline" disabled={!canGenerate} onClick={() => create.mutate()}>
+              <p className="text-rose-300">
+                Generation failed{current.error ? `: ${current.error}` : '.'}
+              </p>
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={!canGenerate}
+                onClick={() => create.mutate()}
+              >
                 Retry
               </Button>
             </div>
@@ -189,8 +216,9 @@ export const CoverLetterPanel = ({ jobId }: { jobId: string | null }) => {
                 className="text-sm leading-relaxed"
               />
               <div className="flex items-center justify-between gap-2">
-                <p className="text-xs text-muted-foreground">
-                  AI draft from your resume — review and edit before sending. Edits stay in this window.
+                <p className="text-muted-foreground text-xs">
+                  AI draft from your resume — review and edit before sending. Edits stay in this
+                  window.
                 </p>
                 <Button size="sm" variant="outline" onClick={() => void copy()}>
                   {copied ? 'Copied' : 'Copy'}

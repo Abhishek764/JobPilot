@@ -7,7 +7,7 @@ export default async function ResumeDetailPage({ params }: { params: Promise<{ i
   const { id } = await params;
   return (
     <div className="space-y-6">
-      <Link href="/resume" className="text-sm text-muted-foreground hover:text-foreground">
+      <Link href="/resume" className="text-muted-foreground hover:text-foreground text-sm">
         ← Resume Lab
       </Link>
       <ResumeDetailView id={id}>

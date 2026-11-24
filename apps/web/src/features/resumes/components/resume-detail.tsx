@@ -17,7 +17,7 @@ import { ResumeProgress } from './resume-status';
 
 const Section = ({ title, children }: { title: string; children: ReactNode }) => (
   <section className="space-y-2">
-    <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">{title}</h2>
+    <h2 className="text-muted-foreground text-sm font-medium uppercase tracking-wide">{title}</h2>
     {children}
   </section>
 );
@@ -44,7 +44,12 @@ const Actions = ({ resume }: { resume: Detail }) => {
     <div className="space-y-2">
       <div className="flex flex-wrap gap-2">
         {resume.fileKey && resume.fileStatus !== 'PENDING' && (
-          <Button variant="outline" size="sm" loading={download.isPending} onClick={() => download.mutate()}>
+          <Button
+            variant="outline"
+            size="sm"
+            loading={download.isPending}
+            onClick={() => download.mutate()}
+          >
             Download PDF
           </Button>
         )}
@@ -99,7 +104,7 @@ export const ResumeDetailView = ({ id, children }: { id: string; children?: Reac
     return (
       <div role="alert" className="rounded-xl border border-red-500/40 bg-red-500/5 p-6 text-sm">
         <p className="font-medium">Couldn’t load this resume.</p>
-        <p className="mt-1 text-muted-foreground">{error.message}</p>
+        <p className="text-muted-foreground mt-1">{error.message}</p>
         <div className="mt-4 flex gap-2">
           <Button size="sm" variant="outline" onClick={() => void refetch()}>
             Try again
@@ -121,9 +126,13 @@ export const ResumeDetailView = ({ id, children }: { id: string; children?: Reac
           <h1 className="text-3xl font-semibold tracking-tight">{resume.title}</h1>
           <ResumeProgress status={resume.fileStatus} error={resume.parseError} />
           {processing && (
-            <p className="text-xs text-muted-foreground">
+            <p className="text-muted-foreground text-xs">
               This page refreshes automatically for a few minutes.{' '}
-              <button type="button" className="underline underline-offset-4" onClick={() => void refetch()}>
+              <button
+                type="button"
+                className="underline underline-offset-4"
+                onClick={() => void refetch()}
+              >
                 {isFetching ? 'Refreshing…' : 'Refresh now'}
               </button>
             </p>
@@ -143,25 +152,33 @@ export const ResumeDetailView = ({ id, children }: { id: string; children?: Reac
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-muted-foreground">No skills were extracted. Matching still uses the full text.</p>
+                <p className="text-muted-foreground text-sm">
+                  No skills were extracted. Matching still uses the full text.
+                </p>
               )}
               {resume.parsedYears != null && (
-                <p className="text-sm text-muted-foreground">
-                  Estimated experience: {resume.parsedYears} {resume.parsedYears === 1 ? 'year' : 'years'}
+                <p className="text-muted-foreground text-sm">
+                  Estimated experience: {resume.parsedYears}{' '}
+                  {resume.parsedYears === 1 ? 'year' : 'years'}
                 </p>
               )}
             </Section>
 
             <Section title="Extracted text">
-              <p className="text-xs text-muted-foreground">
-                This is exactly what the AI reads. If something important is missing, your PDF may use images or
-                unusual layout.
+              <p className="text-muted-foreground text-xs">
+                This is exactly what the AI reads. If something important is missing, your PDF may
+                use images or unusual layout.
               </p>
-              <Button variant="outline" size="sm" onClick={() => setShowText((v) => !v)} aria-expanded={showText}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowText((v) => !v)}
+                aria-expanded={showText}
+              >
                 {showText ? 'Hide text' : 'Show text'}
               </Button>
               {showText && (
-                <pre className="max-h-96 overflow-auto whitespace-pre-wrap rounded-lg border border-border bg-muted/40 p-4 text-xs leading-relaxed">
+                <pre className="border-border bg-muted/40 max-h-96 overflow-auto whitespace-pre-wrap rounded-lg border p-4 text-xs leading-relaxed">
                   {resume.content}
                 </pre>
               )}
@@ -171,14 +188,19 @@ export const ResumeDetailView = ({ id, children }: { id: string; children?: Reac
 
         <Section title="Analyses">
           {resume.analyses.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No analyses yet.</p>
+            <p className="text-muted-foreground text-sm">No analyses yet.</p>
           ) : (
             <ul className="space-y-2">
               {resume.analyses.map((a) => (
-                <li key={a.id} className="flex items-center justify-between rounded-lg border border-border p-3 text-sm">
+                <li
+                  key={a.id}
+                  className="border-border flex items-center justify-between rounded-lg border p-3 text-sm"
+                >
                   <span>{new Date(a.createdAt).toLocaleString()}</span>
                   <span className="font-medium tabular-nums">
-                    {a.status === 'COMPLETED' ? `${a.overallScore ?? '—'}/100` : a.status.toLowerCase()}
+                    {a.status === 'COMPLETED'
+                      ? `${a.overallScore ?? '—'}/100`
+                      : a.status.toLowerCase()}
                   </span>
                 </li>
               ))}
@@ -188,11 +210,14 @@ export const ResumeDetailView = ({ id, children }: { id: string; children?: Reac
 
         <Section title="Tailored versions">
           {resume.versions.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No tailored versions yet.</p>
+            <p className="text-muted-foreground text-sm">No tailored versions yet.</p>
           ) : (
             <ul className="space-y-2">
               {resume.versions.map((v) => (
-                <li key={v.id} className="flex items-center justify-between rounded-lg border border-border p-3 text-sm">
+                <li
+                  key={v.id}
+                  className="border-border flex items-center justify-between rounded-lg border p-3 text-sm"
+                >
                   <span>{v.label}</span>
                   <span className="text-muted-foreground">{v.status.toLowerCase()}</span>
                 </li>

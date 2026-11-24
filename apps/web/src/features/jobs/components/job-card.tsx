@@ -10,22 +10,24 @@ export const JobCard = ({ job }: { job: Job }) => {
   return (
     <Link
       href={`/jobs/${job.id}`}
-      className="group block rounded-xl border border-border bg-card p-5 transition-colors hover:border-primary/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      className="border-border bg-card hover:border-primary/60 focus-visible:ring-ring group block rounded-xl border p-5 transition-colors focus-visible:outline-none focus-visible:ring-2"
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <h3 className="truncate font-semibold tracking-tight group-hover:text-primary">{job.title}</h3>
-          <p className="truncate text-sm text-muted-foreground">{job.company}</p>
+          <h3 className="group-hover:text-primary truncate font-semibold tracking-tight">
+            {job.title}
+          </h3>
+          <p className="text-muted-foreground truncate text-sm">{job.company}</p>
         </div>
         <Badge variant="outline" className="shrink-0">
           {platformLabel(job.sourcePlatform)}
         </Badge>
       </div>
-      <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
+      <div className="text-muted-foreground mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">
         <span>{job.location ?? 'Location not listed'}</span>
         {job.remote && <span className="text-emerald-400">Remote</span>}
         <span>{formatPosted(job.postedAt)}</span>
-        {salary && <span className="font-medium text-foreground">{salary}</span>}
+        {salary && <span className="text-foreground font-medium">{salary}</span>}
       </div>
       {job.skills.length > 0 && (
         <div className="mt-3 flex flex-wrap gap-1.5">

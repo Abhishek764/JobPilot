@@ -31,7 +31,8 @@ export const useResumes = () => {
   return useQuery({
     queryKey: resumeKeys.list,
     queryFn: async () => resumesApi.list(await token()),
-    refetchInterval: (q) => poll(Boolean(q.state.data?.items.some((r) => isProcessing(r.fileStatus)))),
+    refetchInterval: (q) =>
+      poll(Boolean(q.state.data?.items.some((r) => isProcessing(r.fileStatus)))),
   });
 };
 

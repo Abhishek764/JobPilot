@@ -55,8 +55,16 @@ export const SettingsForm = ({ defaults }: Props) => {
         </Field>
       </div>
 
-      <Field label="Experience level" htmlFor="experienceLevel" error={errors.experienceLevel?.message}>
-        <Select id="experienceLevel" aria-invalid={!!errors.experienceLevel} {...form.register('experienceLevel')}>
+      <Field
+        label="Experience level"
+        htmlFor="experienceLevel"
+        error={errors.experienceLevel?.message}
+      >
+        <Select
+          id="experienceLevel"
+          aria-invalid={!!errors.experienceLevel}
+          {...form.register('experienceLevel')}
+        >
           {EXPERIENCE_LEVELS.map((lvl) => (
             <option key={lvl} value={lvl}>
               {lvl}
@@ -69,12 +77,22 @@ export const SettingsForm = ({ defaults }: Props) => {
         <Textarea id="bio" rows={4} aria-invalid={!!errors.bio} {...form.register('bio')} />
       </Field>
 
-      <Field label="Skills" htmlFor="skills" hint="Enter or comma to add." error={errors.skills?.message as string}>
+      <Field
+        label="Skills"
+        htmlFor="skills"
+        hint="Enter or comma to add."
+        error={errors.skills?.message as string}
+      >
         <Controller
           control={form.control}
           name="skills"
           render={({ field }) => (
-            <TagInput id="skills" value={field.value ?? []} onChange={field.onChange} ariaInvalid={!!errors.skills} />
+            <TagInput
+              id="skills"
+              value={field.value ?? []}
+              onChange={field.onChange}
+              ariaInvalid={!!errors.skills}
+            />
           )}
         />
       </Field>
@@ -100,24 +118,46 @@ export const SettingsForm = ({ defaults }: Props) => {
 
       <div className="grid gap-4 md:grid-cols-3">
         <Field label="Resume URL" htmlFor="resumeUrl" error={errors.resumeUrl?.message as string}>
-          <Input id="resumeUrl" type="url" aria-invalid={!!errors.resumeUrl} {...form.register('resumeUrl')} />
+          <Input
+            id="resumeUrl"
+            type="url"
+            aria-invalid={!!errors.resumeUrl}
+            {...form.register('resumeUrl')}
+          />
         </Field>
         <Field label="GitHub URL" htmlFor="githubUrl" error={errors.githubUrl?.message as string}>
-          <Input id="githubUrl" type="url" aria-invalid={!!errors.githubUrl} {...form.register('githubUrl')} />
+          <Input
+            id="githubUrl"
+            type="url"
+            aria-invalid={!!errors.githubUrl}
+            {...form.register('githubUrl')}
+          />
         </Field>
-        <Field label="LinkedIn URL" htmlFor="linkedinUrl" error={errors.linkedinUrl?.message as string}>
-          <Input id="linkedinUrl" type="url" aria-invalid={!!errors.linkedinUrl} {...form.register('linkedinUrl')} />
+        <Field
+          label="LinkedIn URL"
+          htmlFor="linkedinUrl"
+          error={errors.linkedinUrl?.message as string}
+        >
+          <Input
+            id="linkedinUrl"
+            type="url"
+            aria-invalid={!!errors.linkedinUrl}
+            {...form.register('linkedinUrl')}
+          />
         </Field>
       </div>
 
       {serverError ? (
-        <p role="alert" className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+        <p
+          role="alert"
+          className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+        >
           {serverError}
         </p>
       ) : null}
 
       <div className="flex items-center justify-between">
-        <p className="text-xs text-muted-foreground" aria-live="polite">
+        <p className="text-muted-foreground text-xs" aria-live="polite">
           {savedAt ? `Saved at ${savedAt.toLocaleTimeString()}` : ''}
         </p>
         <Button type="submit" loading={pending} disabled={!form.formState.isDirty}>

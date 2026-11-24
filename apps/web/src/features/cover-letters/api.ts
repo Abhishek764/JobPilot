@@ -11,7 +11,8 @@ export interface CreateCoverLetterBody {
 export const coverLettersApi = {
   create: (token: string | null, resumeId: string, body: CreateCoverLetterBody) =>
     apiFetch<CoverLetter>(`/resumes/${resumeId}/cover-letters`, { method: 'POST', body, token }),
-  get: (token: string | null, id: string) => apiFetch<CoverLetter>(`/cover-letters/${id}`, { token }),
+  get: (token: string | null, id: string) =>
+    apiFetch<CoverLetter>(`/cover-letters/${id}`, { token }),
   list: (token: string | null, filter: { jobId?: string; resumeId?: string }) => {
     const sp = new URLSearchParams();
     if (filter.jobId) sp.set('jobId', filter.jobId);

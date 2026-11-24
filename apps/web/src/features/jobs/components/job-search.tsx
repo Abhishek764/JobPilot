@@ -111,7 +111,10 @@ export const JobSearch = () => {
           className="h-11"
           value={filters.platform ?? ''}
           onChange={(e) =>
-            update({ platform: (e.target.value || undefined) as SourcePlatform | undefined, page: 1 })
+            update({
+              platform: (e.target.value || undefined) as SourcePlatform | undefined,
+              page: 1,
+            })
           }
         >
           <option value="">All sources</option>
@@ -121,7 +124,7 @@ export const JobSearch = () => {
             </option>
           ))}
         </Select>
-        <label className="flex h-11 items-center gap-2 rounded-md border border-input px-3 text-sm">
+        <label className="border-input flex h-11 items-center gap-2 rounded-md border px-3 text-sm">
           <input
             type="checkbox"
             checked={filters.remote === true}
@@ -132,7 +135,7 @@ export const JobSearch = () => {
         </label>
       </form>
 
-      <div aria-live="polite" className="text-sm text-muted-foreground">
+      <div aria-live="polite" className="text-muted-foreground text-sm">
         {data && !isPending && (
           <span>
             {data.total.toLocaleString()} {data.total === 1 ? 'job' : 'jobs'}
@@ -150,17 +153,17 @@ export const JobSearch = () => {
       ) : isError ? (
         <div role="alert" className="rounded-xl border border-red-500/40 bg-red-500/5 p-6 text-sm">
           <p className="font-medium">Couldn’t load jobs.</p>
-          <p className="mt-1 text-muted-foreground">{error.message}</p>
+          <p className="text-muted-foreground mt-1">{error.message}</p>
           <Button className="mt-4" size="sm" variant="outline" onClick={() => void refetch()}>
             Try again
           </Button>
         </div>
       ) : data.items.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-border p-10 text-center">
+        <div className="border-border rounded-xl border border-dashed p-10 text-center">
           <p className="font-medium">No jobs match these filters.</p>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Try a broader keyword, clear the location, or include all sources. New listings arrive as
-            scrapers run.
+          <p className="text-muted-foreground mt-1 text-sm">
+            Try a broader keyword, clear the location, or include all sources. New listings arrive
+            as scrapers run.
           </p>
         </div>
       ) : (
@@ -180,7 +183,7 @@ export const JobSearch = () => {
               >
                 Previous
               </Button>
-              <span className="text-sm text-muted-foreground">
+              <span className="text-muted-foreground text-sm">
                 Page {data.page} of {data.totalPages}
               </span>
               <Button

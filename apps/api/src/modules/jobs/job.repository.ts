@@ -64,7 +64,9 @@ export const jobRepository = {
       ...(query.location && { location: { contains: query.location, mode: 'insensitive' } }),
       ...(query.remote !== undefined && { remote: query.remote }),
       ...(query.roleCategory && { roleCategory: query.roleCategory }),
-      ...(query.skills?.length && { skills: { hasSome: query.skills.map((s: string) => s.toLowerCase()) } }),
+      ...(query.skills?.length && {
+        skills: { hasSome: query.skills.map((s: string) => s.toLowerCase()) },
+      }),
       ...(query.salaryMin && { salaryMin: { gte: query.salaryMin } }),
       ...(query.postedAfter && { postedAt: { gte: query.postedAfter } }),
       ...(q && {
@@ -98,7 +100,11 @@ export const jobRepository = {
   async markStaleInactive(platform: string, olderThanDays = 30): Promise<number> {
     const cutoff = new Date(Date.now() - olderThanDays * 86_400_000);
     const res = await prisma.job.updateMany({
-      where: { sourcePlatform: platform as Prisma.JobWhereInput['sourcePlatform'], lastSeenAt: { lt: cutoff }, isActive: true },
+      where: {
+        sourcePlatform: platform as Prisma.JobWhereInput['sourcePlatform'],
+        lastSeenAt: { lt: cutoff },
+        isActive: true,
+      },
       data: { isActive: false },
     });
     return res.count;

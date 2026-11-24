@@ -37,7 +37,10 @@ const ensureOwned = async (userId: string, id: string): Promise<Application> => 
 };
 
 export const applicationService = {
-  async list(clerkUserId: string, query: ListApplicationsQuery): Promise<PaginatedResult<Application>> {
+  async list(
+    clerkUserId: string,
+    query: ListApplicationsQuery,
+  ): Promise<PaginatedResult<Application>> {
     const userId = await resolveUserId(clerkUserId);
     return applicationRepository.list(userId, query);
   },
@@ -63,7 +66,11 @@ export const applicationService = {
     return created;
   },
 
-  async update(clerkUserId: string, id: string, input: UpdateApplicationInput): Promise<Application> {
+  async update(
+    clerkUserId: string,
+    id: string,
+    input: UpdateApplicationInput,
+  ): Promise<Application> {
     const userId = await resolveUserId(clerkUserId);
     const result = await applicationRepository.update(userId, id, input);
     if (result.count === 0) throw new NotFoundError('Application');
@@ -86,11 +93,20 @@ export const applicationService = {
   },
 
   /** Status change without an explicit position — appends to the target column. */
-  async updateStatus(clerkUserId: string, id: string, input: UpdateStatusInput): Promise<Application> {
+  async updateStatus(
+    clerkUserId: string,
+    id: string,
+    input: UpdateStatusInput,
+  ): Promise<Application> {
     const userId = await resolveUserId(clerkUserId);
     await ensureOwned(userId, id);
     const max = await applicationRepository.maxPosition(userId, input.status);
-    const moved = await applicationRepository.move(userId, id, input.status, (max ?? 0) + POSITION_STEP);
+    const moved = await applicationRepository.move(
+      userId,
+      id,
+      input.status,
+      (max ?? 0) + POSITION_STEP,
+    );
     if (!moved) throw new NotFoundError('Application');
     emitToUser(clerkUserId, 'application.moved', moved);
     return moved;
@@ -112,7 +128,12 @@ export const applicationService = {
     >;
     for (const { status, count } of raw.byStatus) byStatus[status as ApplicationStatus] = count;
     const total = Object.values(byStatus).reduce((a, b) => a + b, 0);
-    return { total, byStatus, upcomingReminders: raw.upcomingReminders, recentActivity: raw.recentActivity };
+    return {
+      total,
+      byStatus,
+      upcomingReminders: raw.upcomingReminders,
+      recentActivity: raw.recentActivity,
+    };
   },
 
   async listEvents(

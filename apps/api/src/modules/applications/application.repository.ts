@@ -7,11 +7,7 @@ import {
 } from '@jobpilot/db';
 import type { Board, PaginatedResult } from '@jobpilot/types';
 import { BOARD_COLUMNS } from '@jobpilot/types';
-import type {
-  BoardQuery,
-  ListApplicationsQuery,
-  ListEventsQuery,
-} from '@jobpilot/types/schemas';
+import type { BoardQuery, ListApplicationsQuery, ListEventsQuery } from '@jobpilot/types/schemas';
 
 const searchFilter = (search?: string): Prisma.ApplicationWhereInput =>
   search
@@ -105,8 +101,7 @@ export const applicationRepository = {
     userId: string,
     id: string,
     data: Prisma.ApplicationUncheckedUpdateInput,
-  ): Promise<Prisma.BatchPayload> =>
-    prisma.application.updateMany({ where: { id, userId }, data }),
+  ): Promise<Prisma.BatchPayload> => prisma.application.updateMany({ where: { id, userId }, data }),
 
   /**
    * Move a card to a status/position and log the change atomically. Returns the

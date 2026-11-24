@@ -6,23 +6,27 @@ const DIMENSIONS: { key: keyof Breakdown; label: string; hint: string }[] = [
   { key: 'coreSkills', label: 'Core skills', hint: 'Skills the role needs that your resume shows' },
   { key: 'experience', label: 'Experience', hint: 'Depth and scope of relevant work' },
   { key: 'projects', label: 'Projects', hint: 'Evidence from projects you built' },
-  { key: 'jobAlignment', label: 'Job alignment', hint: 'How closely your focus matches this posting' },
+  {
+    key: 'jobAlignment',
+    label: 'Job alignment',
+    hint: 'How closely your focus matches this posting',
+  },
 ];
 
 const tone = (n: number) => (n >= 80 ? 'bg-emerald-400' : n >= 60 ? 'bg-amber-300' : 'bg-rose-300');
 
 const Score = ({ label, value }: { label: string; value: number | null }) => (
-  <div className="rounded-lg border border-border p-3 text-center">
-    <p className="text-xs uppercase tracking-wide text-muted-foreground">{label}</p>
+  <div className="border-border rounded-lg border p-3 text-center">
+    <p className="text-muted-foreground text-xs uppercase tracking-wide">{label}</p>
     <p className="mt-1 text-3xl font-semibold tabular-nums">{value ?? '—'}</p>
   </div>
 );
 
 const List = ({ title, items, empty }: { title: string; items: string[]; empty: string }) => (
   <div className="space-y-1.5">
-    <h4 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{title}</h4>
+    <h4 className="text-muted-foreground text-xs font-medium uppercase tracking-wide">{title}</h4>
     {items.length === 0 ? (
-      <p className="text-sm text-muted-foreground">{empty}</p>
+      <p className="text-muted-foreground text-sm">{empty}</p>
     ) : (
       <ul className="list-disc space-y-1 pl-5 text-sm">
         {items.map((s, i) => (
@@ -42,7 +46,9 @@ export const MatchBreakdown = ({ match }: { match: MatchAnalysis }) => (
       <Score label="Interview readiness" value={match.readiness} />
     </div>
 
-    {match.rawResult?.summary && <p className="text-sm leading-relaxed">{match.rawResult.summary}</p>}
+    {match.rawResult?.summary && (
+      <p className="text-sm leading-relaxed">{match.rawResult.summary}</p>
+    )}
 
     {match.breakdown && (
       <div className="space-y-2.5" aria-label="Score breakdown">
@@ -53,17 +59,20 @@ export const MatchBreakdown = ({ match }: { match: MatchAnalysis }) => (
             <div key={key} title={hint}>
               <div className="flex justify-between text-xs">
                 <span>{label}</span>
-                <span className="tabular-nums text-muted-foreground">{value}</span>
+                <span className="text-muted-foreground tabular-nums">{value}</span>
               </div>
               <div
-                className="mt-1 h-1.5 rounded-full bg-muted"
+                className="bg-muted mt-1 h-1.5 rounded-full"
                 role="meter"
                 aria-label={label}
                 aria-valuemin={0}
                 aria-valuemax={100}
                 aria-valuenow={value}
               >
-                <div className={cn('h-full rounded-full', tone(value))} style={{ width: `${value}%` }} />
+                <div
+                  className={cn('h-full rounded-full', tone(value))}
+                  style={{ width: `${value}%` }}
+                />
               </div>
             </div>
           );
@@ -75,7 +84,7 @@ export const MatchBreakdown = ({ match }: { match: MatchAnalysis }) => (
     <List title="Missing or weak skills" items={match.missingSkills} empty="No major gaps found." />
     <List title="Suggested next steps" items={match.suggestions} empty="No suggestions." />
 
-    <p className="text-xs text-muted-foreground">
+    <p className="text-muted-foreground text-xs">
       AI estimate from your resume text and this job description only — not a hiring decision.
       {match.completedAt && ` Analyzed ${new Date(match.completedAt).toLocaleString()}`}
       {match.model && ` · ${match.model}`}

@@ -15,7 +15,9 @@ const repo = vi.hoisted(() => ({
 const queue = vi.hoisted(() => ({ enqueueMatchAnalysis: vi.fn() }));
 
 vi.mock('@jobpilot/db', () => ({ prisma }));
-vi.mock('../../config/logger', () => ({ logger: { error: vi.fn(), info: vi.fn(), warn: vi.fn() } }));
+vi.mock('../../config/logger', () => ({
+  logger: { error: vi.fn(), info: vi.fn(), warn: vi.fn() },
+}));
 vi.mock('../queue/queues', () => queue);
 vi.mock('./ai.service', () => ({ aiService: { analyzeMatch: vi.fn() } }));
 vi.mock('./match.repository', () => ({ matchRepository: repo }));
@@ -32,7 +34,12 @@ const ownedResume = {
   updatedAt: RESUME_UPDATED,
 };
 
-const request = { userId: 'user_1', resumeId: 'resume_1', track: 'BACKEND' as const, jobId: 'job_1' };
+const request = {
+  userId: 'user_1',
+  resumeId: 'resume_1',
+  track: 'BACKEND' as const,
+  jobId: 'job_1',
+};
 
 describe('matchService.createAndEnqueue', () => {
   beforeEach(() => {
@@ -46,10 +53,12 @@ describe('matchService.createAndEnqueue', () => {
 
   it('rejects a resume the user does not own', async () => {
     prisma.resume.findFirst.mockResolvedValue(null);
-    await expect(matchService.createAndEnqueue({ ...request, userId: 'intruder' })).rejects.toBeInstanceOf(
-      NotFoundError,
-    );
-    expect(prisma.resume.findFirst).toHaveBeenCalledWith({ where: { id: 'resume_1', userId: 'intruder' } });
+    await expect(
+      matchService.createAndEnqueue({ ...request, userId: 'intruder' }),
+    ).rejects.toBeInstanceOf(NotFoundError);
+    expect(prisma.resume.findFirst).toHaveBeenCalledWith({
+      where: { id: 'resume_1', userId: 'intruder' },
+    });
     expect(repo.create).not.toHaveBeenCalled();
     expect(queue.enqueueMatchAnalysis).not.toHaveBeenCalled();
   });

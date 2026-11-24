@@ -42,9 +42,16 @@ describe('application workflow', () => {
   it('create scopes the row to the user and appends to the column', async () => {
     repo.maxPosition.mockResolvedValue(2048);
     repo.create.mockResolvedValue({ ...owned, events: [] });
-    await applicationService.create(CLERK, { company: 'Acme', title: 'Intern', status: 'SAVED' } as never);
+    await applicationService.create(CLERK, {
+      company: 'Acme',
+      title: 'Intern',
+      status: 'SAVED',
+    } as never);
     expect(repo.maxPosition).toHaveBeenCalledWith(USER, 'SAVED');
-    expect(repo.create).toHaveBeenCalledWith(USER, expect.objectContaining({ company: 'Acme', position: 3072 }));
+    expect(repo.create).toHaveBeenCalledWith(
+      USER,
+      expect.objectContaining({ company: 'Acme', position: 3072 }),
+    );
   });
 
   it('update records an UPDATED event for an owned application', async () => {
@@ -56,9 +63,9 @@ describe('application workflow', () => {
 
   it('update of a foreign application is NotFound and records nothing', async () => {
     repo.update.mockResolvedValue({ count: 0 });
-    await expect(applicationService.update(CLERK, 'app_x', { notes: 'x' } as never)).rejects.toBeInstanceOf(
-      NotFoundError,
-    );
+    await expect(
+      applicationService.update(CLERK, 'app_x', { notes: 'x' } as never),
+    ).rejects.toBeInstanceOf(NotFoundError);
     expect(repo.recordEvent).not.toHaveBeenCalled();
   });
 
@@ -71,9 +78,9 @@ describe('application workflow', () => {
   });
 
   it('status update checks ownership before moving', async () => {
-    await expect(applicationService.updateStatus(CLERK, 'app_x', { status: 'OFFER' } as never)).rejects.toBeInstanceOf(
-      NotFoundError,
-    );
+    await expect(
+      applicationService.updateStatus(CLERK, 'app_x', { status: 'OFFER' } as never),
+    ).rejects.toBeInstanceOf(NotFoundError);
     expect(repo.move).not.toHaveBeenCalled();
   });
 
@@ -84,7 +91,9 @@ describe('application workflow', () => {
   });
 
   it('note creation requires ownership and records NOTE_ADDED', async () => {
-    await expect(noteService.create(CLERK, 'app_x', { body: 'x' })).rejects.toBeInstanceOf(NotFoundError);
+    await expect(noteService.create(CLERK, 'app_x', { body: 'x' })).rejects.toBeInstanceOf(
+      NotFoundError,
+    );
     expect(notes.create).not.toHaveBeenCalled();
 
     notes.create.mockResolvedValue({ id: 'note_1' });
@@ -94,12 +103,15 @@ describe('application workflow', () => {
 
   it('reminder creation requires ownership and records REMINDER_ADDED', async () => {
     const dueAt = new Date('2026-12-01T09:00:00Z');
-    await expect(reminderService.create(CLERK, 'app_x', { title: 'x', dueAt })).rejects.toBeInstanceOf(
-      NotFoundError,
-    );
+    await expect(
+      reminderService.create(CLERK, 'app_x', { title: 'x', dueAt }),
+    ).rejects.toBeInstanceOf(NotFoundError);
     reminders.create.mockResolvedValue({ id: 'rem_1', dueAt });
     await reminderService.create(CLERK, 'app_1', { title: 'Follow up', dueAt });
-    expect(repo.recordEvent).toHaveBeenCalledWith('app_1', 'REMINDER_ADDED', { reminderId: 'rem_1', dueAt });
+    expect(repo.recordEvent).toHaveBeenCalledWith('app_1', 'REMINDER_ADDED', {
+      reminderId: 'rem_1',
+      dueAt,
+    });
   });
 
   it('insights aggregate persisted counts for the caller only', async () => {

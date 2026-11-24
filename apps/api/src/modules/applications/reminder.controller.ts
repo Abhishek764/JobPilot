@@ -9,7 +9,11 @@ const getClerkId = (req: Request): string => (req as Request & { clerkUserId: st
 
 export const reminderController = {
   list: asyncHandler(async (req: Request, res: Response) => {
-    const reminders = await reminderService.list(getClerkId(req), param(req, 'id'), req.query as never);
+    const reminders = await reminderService.list(
+      getClerkId(req),
+      param(req, 'id'),
+      req.query as never,
+    );
     res.json({ success: true, data: reminders });
   }),
 

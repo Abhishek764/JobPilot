@@ -109,7 +109,12 @@ export const OnboardingForm = ({ defaultName }: { defaultName?: string }) => {
           {current.id === 'basics' ? (
             <>
               <Field label="Full name" htmlFor="name" required error={errors.name?.message}>
-                <Input id="name" autoComplete="name" aria-invalid={!!errors.name} {...form.register('name')} />
+                <Input
+                  id="name"
+                  autoComplete="name"
+                  aria-invalid={!!errors.name}
+                  {...form.register('name')}
+                />
               </Field>
               <Field
                 label="Location"
@@ -135,7 +140,11 @@ export const OnboardingForm = ({ defaultName }: { defaultName?: string }) => {
                 required
                 error={errors.experienceLevel?.message}
               >
-                <Select id="experienceLevel" aria-invalid={!!errors.experienceLevel} {...form.register('experienceLevel')}>
+                <Select
+                  id="experienceLevel"
+                  aria-invalid={!!errors.experienceLevel}
+                  {...form.register('experienceLevel')}
+                >
                   {EXPERIENCE_LEVELS.map((lvl) => (
                     <option key={lvl} value={lvl}>
                       {EXPERIENCE_LABELS[lvl]}
@@ -156,7 +165,13 @@ export const OnboardingForm = ({ defaultName }: { defaultName?: string }) => {
 
           {current.id === 'preferences' ? (
             <>
-              <Field label="Skills" htmlFor="skills" required hint="Press Enter or comma to add." error={errors.skills?.message as string}>
+              <Field
+                label="Skills"
+                htmlFor="skills"
+                required
+                hint="Press Enter or comma to add."
+                error={errors.skills?.message as string}
+              >
                 <Controller
                   control={form.control}
                   name="skills"
@@ -197,20 +212,54 @@ export const OnboardingForm = ({ defaultName }: { defaultName?: string }) => {
 
           {current.id === 'links' ? (
             <>
-              <Field label="Resume URL" htmlFor="resumeUrl" hint="https link to a hosted PDF." error={errors.resumeUrl?.message as string}>
-                <Input id="resumeUrl" type="url" placeholder="https://..." aria-invalid={!!errors.resumeUrl} {...form.register('resumeUrl')} />
+              <Field
+                label="Resume URL"
+                htmlFor="resumeUrl"
+                hint="https link to a hosted PDF."
+                error={errors.resumeUrl?.message as string}
+              >
+                <Input
+                  id="resumeUrl"
+                  type="url"
+                  placeholder="https://..."
+                  aria-invalid={!!errors.resumeUrl}
+                  {...form.register('resumeUrl')}
+                />
               </Field>
-              <Field label="GitHub URL" htmlFor="githubUrl" error={errors.githubUrl?.message as string}>
-                <Input id="githubUrl" type="url" placeholder="https://github.com/yourname" aria-invalid={!!errors.githubUrl} {...form.register('githubUrl')} />
+              <Field
+                label="GitHub URL"
+                htmlFor="githubUrl"
+                error={errors.githubUrl?.message as string}
+              >
+                <Input
+                  id="githubUrl"
+                  type="url"
+                  placeholder="https://github.com/yourname"
+                  aria-invalid={!!errors.githubUrl}
+                  {...form.register('githubUrl')}
+                />
               </Field>
-              <Field label="LinkedIn URL" htmlFor="linkedinUrl" error={errors.linkedinUrl?.message as string}>
-                <Input id="linkedinUrl" type="url" placeholder="https://linkedin.com/in/yourname" aria-invalid={!!errors.linkedinUrl} {...form.register('linkedinUrl')} />
+              <Field
+                label="LinkedIn URL"
+                htmlFor="linkedinUrl"
+                error={errors.linkedinUrl?.message as string}
+              >
+                <Input
+                  id="linkedinUrl"
+                  type="url"
+                  placeholder="https://linkedin.com/in/yourname"
+                  aria-invalid={!!errors.linkedinUrl}
+                  {...form.register('linkedinUrl')}
+                />
               </Field>
             </>
           ) : null}
 
           {serverError ? (
-            <p role="alert" className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+            <p
+              role="alert"
+              className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+            >
               {serverError}
             </p>
           ) : null}

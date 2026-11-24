@@ -81,19 +81,35 @@ describe('dashboardRepository.summary', () => {
         {
           id: 'm1',
           compatibility: 91,
-          job: { id: 'j1', title: 'SWE Intern', company: 'Acme', location: 'Remote', sourcePlatform: 'LINKEDIN' },
+          job: {
+            id: 'j1',
+            title: 'SWE Intern',
+            company: 'Acme',
+            location: 'Remote',
+            sourcePlatform: 'LINKEDIN',
+          },
         },
         {
           id: 'm0',
           compatibility: 60,
-          job: { id: 'j1', title: 'SWE Intern', company: 'Acme', location: 'Remote', sourcePlatform: 'LINKEDIN' },
+          job: {
+            id: 'j1',
+            title: 'SWE Intern',
+            company: 'Acme',
+            location: 'Remote',
+            sourcePlatform: 'LINKEDIN',
+          },
         },
       ])
-      .mockResolvedValueOnce([{ id: 'm2', status: 'RUNNING', resumeId: 'cv1', job: { id: 'j2', title: 'Data Intern' } }]);
+      .mockResolvedValueOnce([
+        { id: 'm2', status: 'RUNNING', resumeId: 'cv1', job: { id: 'j2', title: 'Data Intern' } },
+      ]);
     prisma.reminder.findMany.mockResolvedValue([
       { id: 'r1', title: 'Follow up', applicationId: 'a1', application: { company: 'Acme' } },
     ]);
-    prisma.resume.findMany.mockResolvedValue([{ id: 'cv1', title: 'Main CV', fileStatus: 'PARSING' }]);
+    prisma.resume.findMany.mockResolvedValue([
+      { id: 'cv1', title: 'Main CV', fileStatus: 'PARSING' },
+    ]);
 
     const summary = await dashboardRepository.summary(USER, NOW);
 

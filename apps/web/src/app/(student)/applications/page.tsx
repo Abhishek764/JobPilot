@@ -9,7 +9,9 @@ export default function ApplicationsPage() {
     <div className="flex h-[calc(100vh-8rem)] flex-col gap-4">
       <header>
         <h1 className="text-3xl font-semibold tracking-tight">Applications</h1>
-        <p className="text-sm text-muted-foreground">Track every opportunity from saved to offer.</p>
+        <p className="text-muted-foreground text-sm">
+          Track every opportunity from saved to offer.
+        </p>
       </header>
       <div className="min-h-0 flex-1">
         <Suspense>

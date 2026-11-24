@@ -15,7 +15,7 @@ export default function ResumeLabPage() {
     <div className="space-y-8">
       <header>
         <h1 className="text-3xl font-semibold tracking-tight">Resume Lab</h1>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-muted-foreground text-sm">
           Upload your resume once, then check it against any job to see real strengths and gaps.
         </p>
       </header>
@@ -27,7 +27,12 @@ export default function ResumeLabPage() {
           <h2 id="resumes-h" className="text-lg font-semibold tracking-tight">
             Your resumes
           </h2>
-          <Button variant="ghost" size="sm" loading={isFetching && !isPending} onClick={() => void refetch()}>
+          <Button
+            variant="ghost"
+            size="sm"
+            loading={isFetching && !isPending}
+            onClick={() => void refetch()}
+          >
             Refresh
           </Button>
         </div>
@@ -38,15 +43,18 @@ export default function ResumeLabPage() {
             <Skeleton className="h-16 rounded-xl" />
           </div>
         ) : isError ? (
-          <div role="alert" className="rounded-xl border border-red-500/40 bg-red-500/5 p-6 text-sm">
+          <div
+            role="alert"
+            className="rounded-xl border border-red-500/40 bg-red-500/5 p-6 text-sm"
+          >
             <p className="font-medium">Couldn’t load your resumes.</p>
-            <p className="mt-1 text-muted-foreground">{error.message}</p>
+            <p className="text-muted-foreground mt-1">{error.message}</p>
             <Button className="mt-4" size="sm" variant="outline" onClick={() => void refetch()}>
               Try again
             </Button>
           </div>
         ) : data.items.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
+          <div className="border-border text-muted-foreground rounded-xl border border-dashed p-8 text-center text-sm">
             No resumes yet. Upload a PDF above to get started.
           </div>
         ) : (
@@ -55,11 +63,11 @@ export default function ResumeLabPage() {
               <li key={r.id}>
                 <Link
                   href={`/resume/${r.id}`}
-                  className="flex items-center justify-between gap-4 rounded-xl border border-border bg-card/70 p-4 transition-colors hover:border-primary/50"
+                  className="border-border bg-card/70 hover:border-primary/50 flex items-center justify-between gap-4 rounded-xl border p-4 transition-colors"
                 >
                   <div className="min-w-0">
                     <p className="truncate font-medium">{r.title}</p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-muted-foreground text-xs">
                       Uploaded {new Date(r.createdAt).toLocaleDateString()}
                       {r.parsedSkills.length > 0 && ` · ${r.parsedSkills.length} skills found`}
                     </p>

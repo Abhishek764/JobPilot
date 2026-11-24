@@ -21,7 +21,12 @@ const TONE: Record<ResumeFileStatus, string> = {
 };
 
 export const ResumeStatusBadge = ({ status }: { status: ResumeFileStatus }) => (
-  <span className={cn('inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium', TONE[status])}>
+  <span
+    className={cn(
+      'inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium',
+      TONE[status],
+    )}
+  >
     {(status === 'UPLOADED' || status === 'PARSING') && (
       <span aria-hidden className="h-1.5 w-1.5 animate-pulse rounded-full bg-current" />
     )}
@@ -30,7 +35,13 @@ export const ResumeStatusBadge = ({ status }: { status: ResumeFileStatus }) => (
 );
 
 /** PENDING → UPLOADED → PARSING → PARSED, with FAILED shown against the step it stopped on. */
-export const ResumeProgress = ({ status, error }: { status: ResumeFileStatus; error?: string | null }) => {
+export const ResumeProgress = ({
+  status,
+  error,
+}: {
+  status: ResumeFileStatus;
+  error?: string | null;
+}) => {
   const reached = status === 'FAILED' ? -1 : STEPS.indexOf(status);
   return (
     <div className="space-y-2">

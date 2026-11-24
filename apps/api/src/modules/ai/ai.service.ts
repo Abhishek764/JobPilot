@@ -59,7 +59,9 @@ export const aiService = {
       projectExperience: rawInput.projectExperience
         ? truncate(rawInput.projectExperience, env.AI_MAX_RESUME_CHARS)
         : undefined,
-      userSkills: Array.from(new Set(rawInput.userSkills.map((s) => s.toLowerCase().trim()).filter(Boolean))),
+      userSkills: Array.from(
+        new Set(rawInput.userSkills.map((s) => s.toLowerCase().trim()).filter(Boolean)),
+      ),
     };
 
     const promptHash = hashPrompt(operation, model, input);
@@ -120,7 +122,9 @@ export const aiService = {
       tokensOut = usage?.candidatesTokenCount ?? 0;
     } catch (err) {
       logger.error({ err: String(err), track: input.track }, 'gemini match call failed');
-      throw err instanceof UpstreamError ? err : new UpstreamError('AI provider error', { err: String(err) });
+      throw err instanceof UpstreamError
+        ? err
+        : new UpstreamError('AI provider error', { err: String(err) });
     }
 
     const overlap = opts.jobSkillsHint?.length
@@ -147,7 +151,16 @@ export const aiService = {
       metadata: { track: input.track, promptHash },
     });
 
-    return { result: calibrated, model, tokensIn, tokensOut, costUsd, cacheHit: false, promptHash, durationMs };
+    return {
+      result: calibrated,
+      model,
+      tokensIn,
+      tokensOut,
+      costUsd,
+      cacheHit: false,
+      promptHash,
+      durationMs,
+    };
   },
 
   async recordUsage(params: {
@@ -192,7 +205,13 @@ export const aiService = {
     company: string | null;
     role: string | null;
     userId?: string;
-  }): Promise<{ content: string; model: string; tokensIn: number; tokensOut: number; costUsd: number }> {
+  }): Promise<{
+    content: string;
+    model: string;
+    tokensIn: number;
+    tokensOut: number;
+    costUsd: number;
+  }> {
     const modelName = env.GEMINI_RESUME_MODEL;
     const toneGuide: Record<typeof input.tone, string> = {
       PROFESSIONAL: 'polished and professional',
@@ -273,7 +292,9 @@ ${description}`;
     return safeJson(result.response.text());
   },
 
-  async extractResumeSkills(resumeText: string): Promise<{ skills: string[]; yearsExperience: number }> {
+  async extractResumeSkills(
+    resumeText: string,
+  ): Promise<{ skills: string[]; yearsExperience: number }> {
     const model = getModel();
     const prompt = `Extract skills and total years of experience from this resume.
 Return ONLY JSON: {"skills": string[], "yearsExperience": number}

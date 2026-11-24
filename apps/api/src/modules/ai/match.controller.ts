@@ -1,8 +1,5 @@
 import type { Request, Response } from 'express';
-import type {
-  CreateMatchAnalysisInput,
-  ListMatchAnalysesQuery,
-} from '@jobpilot/types/schemas';
+import type { CreateMatchAnalysisInput, ListMatchAnalysesQuery } from '@jobpilot/types/schemas';
 
 import { asyncHandler } from '../../shared/async-handler';
 import { param } from '../../shared/params';

@@ -49,7 +49,11 @@ export const applicationController = {
   }),
 
   events: asyncHandler(async (req: Request, res: Response) => {
-    const result = await applicationService.listEvents(getClerkId(req), param(req, 'id'), req.query as never);
+    const result = await applicationService.listEvents(
+      getClerkId(req),
+      param(req, 'id'),
+      req.query as never,
+    );
     res.json({ success: true, data: result });
   }),
 

@@ -20,4 +20,8 @@ resumeRouter.get('/:id', resumeController.get);
 resumeRouter.post('/:id/ingest', resumeController.ingest);
 resumeRouter.get('/:id/download', resumeController.download);
 resumeRouter.delete('/:id', resumeController.remove);
-resumeRouter.post('/:id/cover-letters', validate(CreateCoverLetterSchema), resumeController.createCoverLetter);
+resumeRouter.post(
+  '/:id/cover-letters',
+  validate(CreateCoverLetterSchema),
+  resumeController.createCoverLetter,
+);

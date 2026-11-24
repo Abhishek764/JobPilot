@@ -20,7 +20,8 @@ const validate = (file: File): string | null => {
   const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
   if (!isPdf) return 'Please choose a PDF file.';
   if (file.size === 0) return 'That file is empty.';
-  if (file.size > MAX_RESUME_BYTES) return `PDF must be under ${MAX_RESUME_BYTES / 1024 / 1024} MB.`;
+  if (file.size > MAX_RESUME_BYTES)
+    return `PDF must be under ${MAX_RESUME_BYTES / 1024 / 1024} MB.`;
   return null;
 };
 
@@ -50,7 +51,7 @@ export const ResumeUploader = () => {
 
   return (
     <form
-      className="space-y-4 rounded-xl border border-dashed border-border bg-card/50 p-6"
+      className="border-border bg-card/50 space-y-4 rounded-xl border border-dashed p-6"
       onSubmit={(e) => {
         e.preventDefault();
         if (!file) return setClientError('Choose a PDF first.');
@@ -67,9 +68,9 @@ export const ResumeUploader = () => {
     >
       <div>
         <h2 className="font-semibold tracking-tight">Upload a resume</h2>
-        <p className="text-sm text-muted-foreground">
-          PDF only, up to {MAX_RESUME_BYTES / 1024 / 1024} MB. Drop it here or browse. The file goes straight to
-          private storage; only you can download it.
+        <p className="text-muted-foreground text-sm">
+          PDF only, up to {MAX_RESUME_BYTES / 1024 / 1024} MB. Drop it here or browse. The file goes
+          straight to private storage; only you can download it.
         </p>
       </div>
       <div className="grid gap-3 sm:grid-cols-[1fr_1fr]">
@@ -83,7 +84,7 @@ export const ResumeUploader = () => {
             type="file"
             accept="application/pdf,.pdf"
             onChange={(e) => pick(e.target.files?.[0] ?? null)}
-            className="block w-full text-sm file:mr-3 file:rounded-md file:border-0 file:bg-muted file:px-3 file:py-2 file:text-sm file:text-foreground"
+            className="file:bg-muted file:text-foreground block w-full text-sm file:mr-3 file:rounded-md file:border-0 file:px-3 file:py-2 file:text-sm"
           />
         </div>
         <div className="space-y-1">

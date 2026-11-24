@@ -260,7 +260,11 @@ export const UploadResumeSchema = z.object({
   title: z.string().trim().min(1).max(200),
   filename: z.string().trim().min(1).max(255),
   contentType: z.literal('application/pdf'),
-  sizeBytes: z.number().int().positive().max(15 * 1024 * 1024),
+  sizeBytes: z
+    .number()
+    .int()
+    .positive()
+    .max(15 * 1024 * 1024),
 });
 
 export const ListResumesQuerySchema = PaginationSchema;

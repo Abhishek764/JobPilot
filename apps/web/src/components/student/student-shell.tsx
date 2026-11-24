@@ -54,16 +54,16 @@ export const StudentShell = ({
     <div className="min-h-screen">
       <a
         href="#main"
-        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-card focus:px-3 focus:py-2"
+        className="focus:bg-card sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:px-3 focus:py-2"
       >
         Skip to content
       </a>
-      <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur">
+      <header className="border-border/60 bg-background/80 sticky top-0 z-40 border-b backdrop-blur">
         <div className="container flex h-16 items-center gap-6">
           <Link href="/dashboard" className="flex items-center gap-2 font-semibold tracking-tight">
             <span
               aria-hidden
-              className="grid h-8 w-8 place-items-center rounded-lg bg-gradient-to-br from-primary to-accent text-sm font-bold text-primary-foreground"
+              className="from-primary to-accent text-primary-foreground grid h-8 w-8 place-items-center rounded-lg bg-gradient-to-br text-sm font-bold"
             >
               JP
             </span>
@@ -73,11 +73,11 @@ export const StudentShell = ({
             {links}
           </nav>
           <div className="ml-auto flex items-center gap-3">
-            <span className="hidden text-sm text-muted-foreground sm:inline">{displayName}</span>
+            <span className="text-muted-foreground hidden text-sm sm:inline">{displayName}</span>
             <UserButton />
             <button
               type="button"
-              className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-border md:hidden"
+              className="border-border inline-flex h-9 w-9 items-center justify-center rounded-md border md:hidden"
               aria-expanded={open}
               aria-controls="mobile-nav"
               aria-label={open ? 'Close menu' : 'Open menu'}
@@ -90,7 +90,11 @@ export const StudentShell = ({
           </div>
         </div>
         {open && (
-          <nav id="mobile-nav" aria-label="Primary" className="container flex flex-col gap-1 pb-4 md:hidden">
+          <nav
+            id="mobile-nav"
+            aria-label="Primary"
+            className="container flex flex-col gap-1 pb-4 md:hidden"
+          >
             {links}
           </nav>
         )}
