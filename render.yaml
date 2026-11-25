@@ -1,0 +1,86 @@
+# Render Blueprint — everything on free plans.
+# External free services you provide: Neon (Postgres + Object Storage), Clerk, Gemini.
+# Values marked `sync: false` are entered in the Render dashboard on first deploy.
+services:
+  - type: keyvalue
+    name: jobpilot-redis
+    plan: free
+    # BullMQ requires keys never be evicted.
+    maxmemoryPolicy: noeviction
+    ipAllowList: [] # internal connections only
+
+  - type: web
+    name: jobpilot-api
+    runtime: node
+    plan: free
+    healthCheckPath: /health
+    buildCommand: >-
+      corepack enable &&
+      pnpm install --frozen-lockfile --prod=false &&
+      pnpm --filter @jobpilot/db generate &&
+      pnpm turbo run build --filter=@jobpilot/api
+    startCommand: pnpm --filter @jobpilot/db migrate:deploy && node apps/api/dist/server.js
+    envVars:
+      - key: NODE_VERSION
+        value: 20
+      - key: NODE_ENV
+        value: production
+      # Free plan has no background workers: run queues inside the API.
+      - key: RUN_WORKERS
+        value: 'true'
+      - key: PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD
+        value: '1'
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: jobpilot-redis
+          property: connectionString
+      - key: DATABASE_URL
+        sync: false
+      - key: CLERK_SECRET_KEY
+        sync: false
+      - key: CLERK_PUBLISHABLE_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: CORS_ORIGINS
+        sync: false
+      - key: S3_ENDPOINT
+        sync: false
+      - key: S3_BUCKET
+        sync: false
+      - key: S3_ACCESS_KEY_ID
+        sync: false
+      - key: S3_SECRET_ACCESS_KEY
+        sync: false
+      - key: S3_REGION
+        value: auto
+      - key: S3_FORCE_PATH_STYLE
+        value: 'true'
+
+  - type: web
+    name: jobpilot-web
+    runtime: node
+    plan: free
+    buildCommand: >-
+      corepack enable &&
+      pnpm install --frozen-lockfile --prod=false &&
+      pnpm turbo run build --filter=@jobpilot/web &&
+      cp -r apps/web/.next/static apps/web/.next/standalone/apps/web/.next/static &&
+      cp -r apps/web/public apps/web/.next/standalone/apps/web/public
+    startCommand: node apps/web/.next/standalone/apps/web/server.js
+    envVars:
+      - key: NODE_VERSION
+        value: 20
+      - key: NODE_ENV
+        value: production
+      - key: HOSTNAME
+        value: 0.0.0.0
+      - key: NEXT_PUBLIC_API_URL
+        sync: false
+      - key: NEXT_PUBLIC_APP_URL
+        sync: false
+      - key: NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+        sync: false
+      - key: CLERK_SECRET_KEY
+        sync: false

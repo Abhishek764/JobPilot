@@ -86,7 +86,11 @@ const EnvSchema = z.object({
 
 export type Env = z.infer<typeof EnvSchema>;
 
-const parsed = EnvSchema.safeParse(process.env);
+// Hosts like Render/Heroku inject PORT; API_PORT still wins when set explicitly.
+const parsed = EnvSchema.safeParse({
+  ...process.env,
+  API_PORT: process.env.API_PORT ?? process.env.PORT,
+});
 
 if (!parsed.success) {
   console.error('❌ Invalid environment variables:');

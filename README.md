@@ -144,15 +144,39 @@ never streams file bytes. You need:
    ]
    ```
 
-Only PDF is accepted (max `RESUME_MAX_BYTES`, default 15 MB). Download links are short-lived
+PDF, DOCX and TXT are accepted (max `RESUME_MAX_BYTES`, default 15 MB). Download links are short-lived
 presigned URLs (`RESUME_URL_TTL_SECONDS`).
 
 ### Job sources
 
-Scrapers for LinkedIn, Wellfound, Indeed and Naukri run in the worker. Configure what to scrape via
+Out of the box, jobs come from the public [Remotive](https://remotive.com) and
+[Arbeitnow](https://www.arbeitnow.com) job-board APIs: synced at startup and every
+`FEED_SYNC_INTERVAL_HOURS` (default 6), with each listing linking back to its source. Admins can
+force a sync with `POST /api/v1/scrape/feeds/sync`. Set `FEEDS_ENABLED=false` to turn this off.
+
+Playwright scrapers for LinkedIn, Wellfound, Indeed and Naukri run in the worker. Configure what to scrape via
 the admin endpoints (`ADMIN` role) — `POST /api/v1/scrape/sources` to upsert a source and
 `POST /api/v1/scrape/runs` to trigger one — and set `SCRAPER_SCHEDULER_ENABLED=true` to run enabled
 sources on their schedule. Failed scrapes are recorded in `ScrapeRun` without removing existing jobs.
+
+## Deploy for free
+
+Everything runs on free tiers (no card needed): **Render** (API, web, Key Value/Redis),
+**Neon** (Postgres + S3-compatible Object Storage), **Clerk** (auth) and **Gemini** (AI).
+[`render.yaml`](./render.yaml) is a Render Blueprint for all three Render pieces.
+
+1. **Neon** — create a project. Copy the connection string (`DATABASE_URL`). Create an Object
+   Storage bucket and an S3 credential; note the endpoint, bucket, access key and secret, and add a
+   CORS rule for your web URL (see [Resume uploads](#resume-uploads)).
+2. **Clerk** — create an application; copy the publishable and secret keys.
+3. **Gemini** — create an API key at Google AI Studio.
+4. **Render** — _New → Blueprint_ on this repo. Fill the `sync: false` values: the keys above,
+   `CORS_ORIGINS` = the web URL, `NEXT_PUBLIC_API_URL` = the API URL, `NEXT_PUBLIC_APP_URL` = the
+   web URL.
+
+The API applies migrations on start (`prisma migrate deploy`) and runs the queue workers in-process
+(`RUN_WORKERS=true`) because the free plan has no background workers. Free services sleep after
+~15 minutes idle; the first request after that takes ~30–60 s.
 
 ## Scripts (root)
 
