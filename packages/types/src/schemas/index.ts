@@ -1,8 +1,8 @@
 import { z } from 'zod';
 
 import { APPLICATION_STATUSES, REMINDER_STATUSES } from '../domain/application';
-import { COVER_LETTER_TONES } from '../domain/resume';
 import { SALARY_PERIODS, SOURCE_PLATFORMS } from '../domain/job';
+import { COVER_LETTER_TONES } from '../domain/resume';
 import { EXPERIENCE_LEVELS, ROLES } from '../domain/user';
 
 const httpsUrl = z

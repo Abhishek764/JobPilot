@@ -1,9 +1,9 @@
-import type { Request, Response } from 'express';
 import type { CreateMatchAnalysisInput, ListMatchAnalysesQuery } from '@jobpilot/types/schemas';
+import type { Request, Response } from 'express';
 
 import { asyncHandler } from '../../shared/async-handler';
-import { param } from '../../shared/params';
 import { ForbiddenError, NotFoundError, UnauthorizedError } from '../../shared/errors';
+import { param } from '../../shared/params';
 import { userService } from '../users/user.service';
 
 import { matchRepository } from './match.repository';

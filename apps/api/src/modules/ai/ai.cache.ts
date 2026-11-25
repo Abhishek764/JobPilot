@@ -3,8 +3,8 @@ import { createHash } from 'node:crypto';
 import { prisma } from '@jobpilot/db';
 
 import { env } from '../../config/env';
-import { redis } from '../../config/redis';
 import { logger } from '../../config/logger';
+import { redis } from '../../config/redis';
 
 const REDIS_PREFIX = 'ai:cache:';
 
@@ -15,11 +15,7 @@ export interface CacheEntry<T = unknown> {
   model: string;
 }
 
-export const hashPrompt = (
-  operation: string,
-  model: string,
-  payload: unknown,
-): string => {
+export const hashPrompt = (operation: string, model: string, payload: unknown): string => {
   const json = typeof payload === 'string' ? payload : JSON.stringify(payload);
   return createHash('sha256').update(`${operation}|${model}|${json}`).digest('hex');
 };
@@ -47,7 +43,9 @@ export const aiCache = {
       model: row.model,
     };
     await this.warmRedis(key, entry, Math.floor((row.expiresAt.getTime() - Date.now()) / 1000));
-    await prisma.aiCache.update({ where: { key }, data: { hits: { increment: 1 } } }).catch(() => undefined);
+    await prisma.aiCache
+      .update({ where: { key }, data: { hits: { increment: 1 } } })
+      .catch(() => undefined);
     return entry;
   },
 

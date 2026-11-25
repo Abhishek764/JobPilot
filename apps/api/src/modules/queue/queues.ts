@@ -1,5 +1,5 @@
-import type { NormalizedJob, SourcePlatform } from '@jobpilot/types';
 import type { MatchTrack } from '@jobpilot/db';
+import type { NormalizedJob, SourcePlatform } from '@jobpilot/types';
 import { Queue, QueueEvents, type JobsOptions } from 'bullmq';
 
 import { env } from '../../config/env';

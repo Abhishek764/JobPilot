@@ -1,8 +1,8 @@
 import { prisma } from '@jobpilot/db';
 import type { Request, Response } from 'express';
 
-import { BadRequestError, NotFoundError } from '../../shared/errors';
 import { asyncHandler } from '../../shared/async-handler';
+import { BadRequestError, NotFoundError } from '../../shared/errors';
 import { userService } from '../users/user.service';
 
 import { aiService } from './ai.service';

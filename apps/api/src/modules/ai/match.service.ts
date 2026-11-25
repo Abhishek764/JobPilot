@@ -5,9 +5,9 @@ import { logger } from '../../config/logger';
 import { BadRequestError, NotFoundError } from '../../shared/errors';
 import { enqueueMatchAnalysis } from '../queue/queues';
 
+import type { Track } from './ai.prompts';
 import { aiService } from './ai.service';
 import { matchRepository } from './match.repository';
-import type { Track } from './ai.prompts';
 
 export interface CreateMatchRequest {
   userId: string;

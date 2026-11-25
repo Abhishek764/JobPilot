@@ -1,4 +1,5 @@
-import { Prisma, prisma, type Job } from '@jobpilot/db';
+import type { Prisma } from '@jobpilot/db';
+import { prisma, type Job } from '@jobpilot/db';
 import type { NormalizedJob, Schemas } from '@jobpilot/types';
 
 import { canonicalizeUrl, contentHash } from '../scraper/core/dedup';

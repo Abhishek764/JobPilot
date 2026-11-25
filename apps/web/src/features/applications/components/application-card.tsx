@@ -1,8 +1,8 @@
 'use client';
 
-import type { Application } from '@jobpilot/types';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import type { Application } from '@jobpilot/types';
 import { MapPin } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
@@ -35,21 +35,21 @@ export const ApplicationCard = ({ application, onSelect, overlay }: Props) => {
       {...listeners}
       onClick={() => onSelect(application.id)}
       className={cn(
-        'w-full cursor-grab rounded-md border bg-card p-3 text-left shadow-sm transition-shadow hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-ring active:cursor-grabbing',
+        'bg-card focus-visible:ring-ring w-full cursor-grab rounded-md border p-3 text-left shadow-sm transition-shadow hover:shadow-md focus:outline-none focus-visible:ring-2 active:cursor-grabbing',
         isDragging && !overlay && 'opacity-40',
         overlay && 'cursor-grabbing shadow-lg',
       )}
     >
       <p className="line-clamp-2 text-sm font-medium leading-snug">{application.title}</p>
-      <p className="mt-0.5 text-xs text-muted-foreground">{application.company}</p>
-      <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground">
+      <p className="text-muted-foreground mt-0.5 text-xs">{application.company}</p>
+      <div className="text-muted-foreground mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px]">
         {application.location ? (
           <span className="inline-flex items-center gap-1">
             <MapPin className="h-3 w-3" />
             {application.location}
           </span>
         ) : null}
-        {salary ? <span className="font-medium text-foreground">{salary}</span> : null}
+        {salary ? <span className="text-foreground font-medium">{salary}</span> : null}
       </div>
     </button>
   );

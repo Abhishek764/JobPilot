@@ -5,13 +5,13 @@ import { attachUserId, requireAuth } from '../../middleware/auth';
 import { requireRole } from '../../middleware/rbac';
 import { validate } from '../../middleware/validate';
 import { asyncHandler } from '../../shared/async-handler';
-import { registerScrapers } from './sources';
+import { syncScheduledSources } from '../queue/scheduler';
 
 import { scrapeOrchestrator } from './scrape-orchestrator';
 import { scrapeRunRepository } from './scrape-run.repository';
 import { scrapeSourceRepository } from './scrape-source.repository';
-import { syncScheduledSources } from '../queue/scheduler';
 import { scraperService } from './scraper.service';
+import { registerScrapers } from './sources';
 
 registerScrapers();
 

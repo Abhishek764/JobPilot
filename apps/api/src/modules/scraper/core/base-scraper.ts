@@ -1,4 +1,5 @@
 import type { NormalizedJob } from '@jobpilot/types';
+import type { SourcePlatform } from '@jobpilot/types';
 
 import { logger } from '../../../config/logger';
 import { UpstreamError } from '../../../shared/errors';
@@ -13,7 +14,6 @@ import type {
   ScraperContext,
   SourceScraper,
 } from './types';
-import type { SourcePlatform } from '@jobpilot/types';
 
 /**
  * Abstract base for source scrapers.
@@ -58,7 +58,10 @@ export abstract class BaseSourceScraper implements SourceScraper {
       } catch (err) {
         lastErr = err;
         const backoff = Math.min(2 ** i * 500 + Math.random() * 400, 8_000);
-        logger.warn({ label, attempt: i + 1, backoff, err: (err as Error).message }, 'scraper retry');
+        logger.warn(
+          { label, attempt: i + 1, backoff, err: (err as Error).message },
+          'scraper retry',
+        );
         await new Promise((r) => setTimeout(r, backoff));
       }
     }

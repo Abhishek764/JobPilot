@@ -1,5 +1,5 @@
-import type { JobMatch } from '@jobpilot/types';
 import { prisma } from '@jobpilot/db';
+import type { JobMatch } from '@jobpilot/types';
 
 import { env } from '../../config/env';
 import { logger } from '../../config/logger';

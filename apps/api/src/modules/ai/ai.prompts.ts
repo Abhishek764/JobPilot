@@ -1,3 +1,4 @@
+import { SchemaType } from '@google/generative-ai';
 import type { MatchTrack } from '@jobpilot/db';
 
 export const TRACKS = ['BACKEND', 'FRONTEND', 'FULLSTACK', 'DEVOPS'] as const;
@@ -104,8 +105,6 @@ export const buildUserPrompt = (input: AnalysisInput): string => {
     'Interview readiness is "how likely this candidate clears a typical loop for this role" — 0 (unlikely) to 100 (very strong).',
   ].join('\n');
 };
-
-import { SchemaType } from '@google/generative-ai';
 
 /**
  * Gemini structured-output schema. Uses SchemaType enum so the SDK serializes

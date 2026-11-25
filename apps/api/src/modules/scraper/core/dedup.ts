@@ -1,7 +1,8 @@
 import { createHash } from 'node:crypto';
 
-import { redis } from '../../../config/redis';
 import type { NormalizedJob } from '@jobpilot/types';
+
+import { redis } from '../../../config/redis';
 
 /**
  * Two-layer dedup:
@@ -13,7 +14,16 @@ export const canonicalizeUrl = (url: string): string => {
   try {
     const u = new URL(url);
     u.hash = '';
-    const drop = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'refId', 'trk', 'src'];
+    const drop = [
+      'utm_source',
+      'utm_medium',
+      'utm_campaign',
+      'utm_term',
+      'utm_content',
+      'refId',
+      'trk',
+      'src',
+    ];
     drop.forEach((p) => u.searchParams.delete(p));
     u.searchParams.sort();
     let pathname = u.pathname.replace(/\/+$/, '');
@@ -25,7 +35,10 @@ export const canonicalizeUrl = (url: string): string => {
 };
 
 export const contentHash = (
-  job: Pick<NormalizedJob, 'sourcePlatform' | 'company' | 'title' | 'location' | 'externalId' | 'url'>,
+  job: Pick<
+    NormalizedJob,
+    'sourcePlatform' | 'company' | 'title' | 'location' | 'externalId' | 'url'
+  >,
 ): string => {
   const key = [
     job.sourcePlatform,

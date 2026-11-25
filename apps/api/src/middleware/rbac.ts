@@ -1,8 +1,8 @@
 import type { Role } from '@jobpilot/types';
 import type { NextFunction, Request, Response } from 'express';
 
-import { ForbiddenError, UnauthorizedError } from '../shared/errors';
 import { userService } from '../modules/users/user.service';
+import { ForbiddenError, UnauthorizedError } from '../shared/errors';
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace

@@ -3,8 +3,8 @@ import { Queue } from 'bullmq';
 import { env } from '../../config/env';
 import { logger } from '../../config/logger';
 import { redis } from '../../config/redis';
-import { scrapeSourceRepository } from '../scraper/scrape-source.repository';
 import { scrapeRunRepository } from '../scraper/scrape-run.repository';
+import { scrapeSourceRepository } from '../scraper/scrape-source.repository';
 
 import { enqueueListing } from './queues';
 
@@ -44,7 +44,9 @@ export const syncScheduledSources = async (): Promise<void> => {
 
 /** Worker side: explodes a scheduler tick into a fresh ScrapeRun + listing jobs. */
 export const fanOutScheduledRun = async (sourceId: string): Promise<void> => {
-  const source = await scrapeSourceRepository.list().then((all) => all.find((s) => s.id === sourceId));
+  const source = await scrapeSourceRepository
+    .list()
+    .then((all) => all.find((s) => s.id === sourceId));
   if (!source || !source.enabled) return;
 
   const queries = source.searchQueries.length ? source.searchQueries : [''];
