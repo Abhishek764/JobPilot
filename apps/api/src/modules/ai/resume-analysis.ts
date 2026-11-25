@@ -126,3 +126,21 @@ export const normalizeResumeAnalysis = (raw: unknown, hasJob: boolean): ResumeAn
     atsIssues,
   };
 };
+
+/** Rewrite a resume as Markdown aimed at one job, using only facts already in it. */
+export const buildTailorPrompt = (resume: string, jobDescription: string): string =>
+  [
+    'Rewrite this student’s resume as clean Markdown tailored to the JOB DESCRIPTION.',
+    'Rules:',
+    '- Never invent employers, titles, dates, degrees, metrics, tools or skills. Use only facts present in the RESUME.',
+    '- Reorder and rephrase to surface the experience most relevant to the job; mirror the job’s wording where it is truthful.',
+    '- Keep standard sections (Summary, Skills, Experience, Projects, Education) and concise bullet points.',
+    '- Never infer or mention protected characteristics — age, gender, race, ethnicity, nationality, religion, sexual orientation, health, disability, family status or political beliefs.',
+    '- Return only the Markdown resume, no commentary.',
+    '',
+    'RESUME:',
+    resume,
+    '',
+    'JOB DESCRIPTION:',
+    jobDescription,
+  ].join('\n');

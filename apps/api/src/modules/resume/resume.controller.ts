@@ -6,6 +6,7 @@ import { param } from '../../shared/params';
 import { analysisService } from './analysis.service';
 import { coverLetterService } from './cover-letter.service';
 import { resumeService } from './resume.service';
+import { versionService } from './version.service';
 
 const clerkId = (req: Request): string => (req as Request & { clerkUserId: string }).clerkUserId;
 
@@ -43,6 +44,11 @@ export const resumeController = {
   createAnalysis: asyncHandler(async (req: Request, res: Response) => {
     const analysis = await analysisService.create(clerkId(req), param(req, 'id'), req.body);
     res.status(202).json({ success: true, data: analysis });
+  }),
+
+  createVersion: asyncHandler(async (req: Request, res: Response) => {
+    const version = await versionService.create(clerkId(req), param(req, 'id'), req.body);
+    res.status(202).json({ success: true, data: version });
   }),
 
   remove: asyncHandler(async (req: Request, res: Response) => {

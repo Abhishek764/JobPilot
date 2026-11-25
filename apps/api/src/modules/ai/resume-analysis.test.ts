@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildResumeAnalysisPrompt, normalizeResumeAnalysis } from './resume-analysis';
+import {
+  buildResumeAnalysisPrompt,
+  buildTailorPrompt,
+  normalizeResumeAnalysis,
+} from './resume-analysis';
 
 describe('normalizeResumeAnalysis', () => {
   const raw = {
@@ -52,5 +56,15 @@ describe('buildResumeAnalysisPrompt', () => {
     expect(withJob).toContain('JOB TEXT');
     expect(withJob.toLowerCase()).toContain('protected characteristics');
     expect(buildResumeAnalysisPrompt('RESUME TEXT', null)).not.toContain('JOB DESCRIPTION');
+  });
+});
+
+describe('buildTailorPrompt', () => {
+  it('forbids inventing facts and protected characteristics', () => {
+    const p = buildTailorPrompt('RESUME TEXT', 'JOB TEXT');
+    expect(p).toContain('RESUME TEXT');
+    expect(p).toContain('JOB TEXT');
+    expect(p.toLowerCase()).toContain('never invent');
+    expect(p.toLowerCase()).toContain('protected characteristics');
   });
 });

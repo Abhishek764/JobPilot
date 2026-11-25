@@ -16,6 +16,7 @@ import { useDeleteResume, useResume } from '../hooks';
 
 import { ResumeAnalysisPanel } from './resume-analysis';
 import { ResumeProgress } from './resume-status';
+import { ResumeVersionsPanel } from './resume-versions';
 
 const Section = ({ title, children }: { title: string; children: ReactNode }) => (
   <section className="space-y-2">
@@ -193,23 +194,7 @@ export const ResumeDetailView = ({ id, children }: { id: string; children?: Reac
 
         {resume.fileStatus === 'PARSED' && <ResumeAnalysisPanel resume={resume} />}
 
-        <Section title="Tailored versions">
-          {resume.versions.length === 0 ? (
-            <p className="text-muted-foreground text-sm">No tailored versions yet.</p>
-          ) : (
-            <ul className="space-y-2">
-              {resume.versions.map((v) => (
-                <li
-                  key={v.id}
-                  className="border-border flex items-center justify-between rounded-lg border p-3 text-sm"
-                >
-                  <span>{v.label}</span>
-                  <span className="text-muted-foreground">{v.status.toLowerCase()}</span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </Section>
+        {resume.fileStatus === 'PARSED' && <ResumeVersionsPanel resume={resume} />}
       </div>
 
       <aside className="space-y-4">{children}</aside>

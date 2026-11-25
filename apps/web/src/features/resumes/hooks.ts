@@ -44,8 +44,10 @@ export const useResume = (id: string) => {
     queryFn: async () => resumesApi.get(await token(), id),
     refetchInterval: (q) => {
       const d = q.state.data;
-      const analysing = d?.analyses[0]?.status === 'QUEUED' || d?.analyses[0]?.status === 'RUNNING';
-      return poll(Boolean(d && (isProcessing(d.fileStatus) || analysing)));
+      const pending = (s?: string) => s === 'QUEUED' || s === 'RUNNING';
+      const aiWork =
+        pending(d?.analyses[0]?.status) || Boolean(d?.versions.some((v) => pending(v.status)));
+      return poll(Boolean(d && (isProcessing(d.fileStatus) || aiWork)));
     },
   });
 };

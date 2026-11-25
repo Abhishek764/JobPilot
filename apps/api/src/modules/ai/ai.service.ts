@@ -18,6 +18,7 @@ import { calibrate, skillOverlap, truncate } from './ai.scoring';
 import { estimateCostUsd, getModel } from './gemini.client';
 import {
   buildResumeAnalysisPrompt,
+  buildTailorPrompt,
   normalizeResumeAnalysis,
   RESUME_ANALYSIS_SCHEMA,
   type ResumeAnalysisResult,
@@ -310,6 +311,48 @@ export const aiService = {
       durationMs: Date.now() - started,
     });
     return { ...parsed, model: modelName, tokensIn, tokensOut, costUsd };
+  },
+
+  /** Tailored Markdown resume for one job, grounded only in the resume's own facts. */
+  async tailorResume(input: {
+    resumeContent: string;
+    jobDescription: string;
+    userId?: string;
+  }): Promise<{
+    markdown: string;
+    model: string;
+    tokensIn: number;
+    tokensOut: number;
+    costUsd: number;
+  }> {
+    const modelName = env.GEMINI_RESUME_MODEL;
+    const prompt = buildTailorPrompt(
+      truncate(input.resumeContent, env.AI_MAX_RESUME_CHARS),
+      truncate(input.jobDescription, env.AI_MAX_JOB_CHARS),
+    );
+    const started = Date.now();
+    const result = await getModel(modelName).generateContent(prompt);
+    const markdown = result.response
+      .text()
+      .replace(/^```(?:markdown|md)?\s*/i, '')
+      .replace(/```\s*$/, '')
+      .trim();
+    if (markdown.length < 100) throw new UpstreamError('AI returned an empty resume');
+    const usage = result.response.usageMetadata;
+    const tokensIn = usage?.promptTokenCount ?? 0;
+    const tokensOut = usage?.candidatesTokenCount ?? 0;
+    const costUsd = estimateCostUsd(modelName, tokensIn, tokensOut);
+    await this.recordUsage({
+      userId: input.userId,
+      operation: 'resume.tailor',
+      model: modelName,
+      tokensIn,
+      tokensOut,
+      cached: false,
+      costUsd,
+      durationMs: Date.now() - started,
+    });
+    return { markdown, model: modelName, tokensIn, tokensOut, costUsd };
   },
 
   // Legacy Gemini-backed helpers kept for backwards compatibility with existing controllers.

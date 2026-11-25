@@ -1,6 +1,7 @@
 import {
   CreateCoverLetterSchema,
   CreateResumeAnalysisSchema,
+  CreateResumeVersionSchema,
   ListResumesQuerySchema,
   UploadResumeSchema,
 } from '@jobpilot/types/schemas';
@@ -25,6 +26,11 @@ resumeRouter.post(
   '/:id/analyses',
   validate(CreateResumeAnalysisSchema),
   resumeController.createAnalysis,
+);
+resumeRouter.post(
+  '/:id/versions',
+  validate(CreateResumeVersionSchema),
+  resumeController.createVersion,
 );
 resumeRouter.post(
   '/:id/cover-letters',
