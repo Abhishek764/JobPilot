@@ -168,7 +168,7 @@ export const JobSearch = () => {
         </div>
       ) : (
         <>
-          <div className="grid gap-3 md:grid-cols-2">
+          <div className="stagger grid gap-3 md:grid-cols-2">
             {data.items.map((job) => (
               <JobCard key={job.id} job={job} />
             ))}

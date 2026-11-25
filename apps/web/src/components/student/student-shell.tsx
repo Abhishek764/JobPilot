@@ -103,7 +103,7 @@ export const StudentShell = ({
           </nav>
         )}
       </header>
-      <main id="main" className="rise-in container py-10">
+      <main key={pathname} id="main" className="rise-in container py-10">
         {children}
       </main>
     </div>

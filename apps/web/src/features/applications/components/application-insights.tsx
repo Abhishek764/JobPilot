@@ -50,7 +50,7 @@ export const ApplicationInsights = ({ onOpen }: { onOpen?: (id: string) => void 
 
   return (
     <section aria-label="Application insights" className="grid gap-3 lg:grid-cols-[1fr_auto]">
-      <ol className="flex flex-wrap gap-2">
+      <ol className="stagger flex flex-wrap gap-2">
         {FUNNEL.map((s) => (
           <li key={s} className="glass min-w-[88px] rounded-lg px-3 py-2">
             <p className="text-muted-foreground text-[11px] uppercase tracking-wide">

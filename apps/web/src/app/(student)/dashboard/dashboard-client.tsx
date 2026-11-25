@@ -47,7 +47,7 @@ const Metric = ({
 }) => (
   <Link
     href={href}
-    className="glass glass-interactive rise-in focus-visible:ring-ring rounded-2xl p-5 focus-visible:outline-none focus-visible:ring-2"
+    className="glass glass-interactive focus-visible:ring-ring rounded-2xl p-5 focus-visible:outline-none focus-visible:ring-2"
   >
     <p className="text-muted-foreground text-xs font-medium uppercase tracking-wide">{label}</p>
     <p className="mt-2 text-3xl font-semibold tabular-nums tracking-tight">{value}</p>
@@ -109,7 +109,10 @@ const Sections = ({ summary }: { summary: DashboardSummary }) => {
   const { metrics, recommendedJobs, attentionItems } = summary;
   return (
     <>
-      <section aria-label="Your numbers" className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <section
+        aria-label="Your numbers"
+        className="stagger grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
+      >
         <Metric
           label="Strong matches"
           value={String(metrics.strongMatches)}
@@ -157,7 +160,7 @@ const Sections = ({ summary }: { summary: DashboardSummary }) => {
               lines up.
             </div>
           ) : (
-            <ul className="space-y-2">
+            <ul className="stagger space-y-2">
               {recommendedJobs.map((job) => (
                 <li key={job.id}>
                   <Link
@@ -197,7 +200,7 @@ const Sections = ({ summary }: { summary: DashboardSummary }) => {
               You’re all caught up.
             </div>
           ) : (
-            <ul className="space-y-2">
+            <ul className="stagger space-y-2">
               {attentionItems.map((item) => (
                 <li key={`${item.kind}-${item.id}`}>
                   <Link

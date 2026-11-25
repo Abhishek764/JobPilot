@@ -58,7 +58,7 @@ export default function ResumeLabPage() {
             No resumes yet. Upload a PDF, DOCX or TXT above to get started.
           </div>
         ) : (
-          <ul className="space-y-2">
+          <ul className="stagger space-y-2">
             {data.items.map((r) => (
               <li key={r.id}>
                 <Link
