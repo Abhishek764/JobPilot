@@ -159,11 +159,11 @@ export const JobSearch = () => {
           </Button>
         </div>
       ) : data.items.length === 0 ? (
-        <div className="border-border rounded-xl border border-dashed p-10 text-center">
+        <div className="glass rounded-2xl border-dashed p-10 text-center">
           <p className="font-medium">No jobs match these filters.</p>
           <p className="text-muted-foreground mt-1 text-sm">
             Try a broader keyword, clear the location, or include all sources. New listings arrive
-            as scrapers run.
+            every hour.
           </p>
         </div>
       ) : (

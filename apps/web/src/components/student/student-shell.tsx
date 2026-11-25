@@ -39,10 +39,10 @@ export const StudentShell = ({
         href={item.href}
         aria-current={active ? 'page' : undefined}
         className={cn(
-          'rounded-md px-3 py-2 text-sm font-medium transition-colors',
+          'ease-spring rounded-full px-3.5 py-1.5 text-sm font-medium transition-[background-color,color,box-shadow] duration-300',
           active
-            ? 'bg-primary/15 text-foreground'
-            : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+            ? 'text-foreground bg-white/[0.14] shadow-[inset_0_1px_0_hsl(0_0%_100%/0.18)]'
+            : 'text-muted-foreground hover:text-foreground hover:bg-white/[0.07]',
         )}
       >
         {item.label}
@@ -54,16 +54,20 @@ export const StudentShell = ({
     <div className="min-h-screen">
       <a
         href="#main"
-        className="focus:bg-card sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:px-3 focus:py-2"
+        className="glass-strong sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:px-4 focus:py-2"
       >
         Skip to content
       </a>
-      <header className="border-border/60 bg-background/80 sticky top-0 z-40 border-b backdrop-blur">
-        <div className="container flex h-16 items-center gap-6">
-          <Link href="/dashboard" className="flex items-center gap-2 font-semibold tracking-tight">
+      {/* Floating glass bar, inset from the edges like macOS/iOS toolbars. */}
+      <header className="sticky top-3 z-40 px-3">
+        <div className="glass-strong container flex h-14 items-center gap-6 rounded-full px-3 sm:px-4">
+          <Link
+            href="/dashboard"
+            className="flex items-center gap-2.5 pl-1 font-semibold tracking-tight"
+          >
             <span
               aria-hidden
-              className="from-primary to-accent text-primary-foreground grid h-8 w-8 place-items-center rounded-lg bg-gradient-to-br text-sm font-bold"
+              className="bg-primary grid h-8 w-8 place-items-center rounded-full text-xs font-bold text-white shadow-[inset_0_1px_0_hsl(0_0%_100%/0.3)]"
             >
               JP
             </span>
@@ -77,7 +81,7 @@ export const StudentShell = ({
             <UserButton />
             <button
               type="button"
-              className="border-border inline-flex h-9 w-9 items-center justify-center rounded-md border md:hidden"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/10 transition hover:bg-white/20 md:hidden"
               aria-expanded={open}
               aria-controls="mobile-nav"
               aria-label={open ? 'Close menu' : 'Open menu'}
@@ -93,13 +97,13 @@ export const StudentShell = ({
           <nav
             id="mobile-nav"
             aria-label="Primary"
-            className="container flex flex-col gap-1 pb-4 md:hidden"
+            className="glass-strong rise-in container mt-2 flex flex-col gap-1 rounded-3xl p-2 md:hidden"
           >
             {links}
           </nav>
         )}
       </header>
-      <main id="main" className="container py-8">
+      <main id="main" className="rise-in container py-10">
         {children}
       </main>
     </div>

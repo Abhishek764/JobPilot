@@ -43,9 +43,7 @@ export default async function SettingsPage() {
       <Card>
         <CardHeader>
           <CardTitle>Profile</CardTitle>
-          <CardDescription>
-            Updates apply immediately to AI matching + recommendations.
-          </CardDescription>
+          <CardDescription>Your skills and bio are used in new fit analyses.</CardDescription>
         </CardHeader>
         <CardContent>
           <SettingsForm

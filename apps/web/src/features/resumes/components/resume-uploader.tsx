@@ -50,7 +50,7 @@ export const ResumeUploader = () => {
 
   return (
     <form
-      className="border-border bg-card/50 space-y-4 rounded-xl border border-dashed p-6"
+      className="glass space-y-4 rounded-2xl border-dashed p-6"
       onSubmit={(e) => {
         e.preventDefault();
         if (!file) return setClientError('Choose a file first.');

@@ -11,7 +11,7 @@ const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 export const metadata: Metadata = {
   title: 'JobPilot AI',
   description:
-    'Student-first AI job search: discover roles, understand your fit, and stay organized.',
+    'Search real job listings, check your resume against each one, and track your applications.',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

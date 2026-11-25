@@ -38,7 +38,7 @@ export const ApplicationInsights = ({ onOpen }: { onOpen?: (id: string) => void 
   }
   if (data.total === 0) {
     return (
-      <p className="border-border text-muted-foreground rounded-xl border border-dashed p-4 text-sm">
+      <p className="glass text-muted-foreground rounded-2xl border-dashed p-4 text-sm">
         No applications yet. Save a job from <strong className="text-foreground">Jobs</strong> or
         add one manually to start tracking.
       </p>
@@ -52,7 +52,7 @@ export const ApplicationInsights = ({ onOpen }: { onOpen?: (id: string) => void 
     <section aria-label="Application insights" className="grid gap-3 lg:grid-cols-[1fr_auto]">
       <ol className="flex flex-wrap gap-2">
         {FUNNEL.map((s) => (
-          <li key={s} className="border-border bg-card/70 min-w-[88px] rounded-lg border px-3 py-2">
+          <li key={s} className="glass min-w-[88px] rounded-lg px-3 py-2">
             <p className="text-muted-foreground text-[11px] uppercase tracking-wide">
               {STATUS_LABELS[s]}
             </p>

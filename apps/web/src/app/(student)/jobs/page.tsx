@@ -11,7 +11,8 @@ export default function JobsPage() {
       <header>
         <h1 className="text-3xl font-semibold tracking-tight">Find jobs</h1>
         <p className="text-muted-foreground text-sm">
-          Real listings from Remotive, Arbeitnow, LinkedIn, Wellfound, Indeed and Naukri.
+          Internships and entry-level jobs (up to 1.5 years&apos; experience) from public job
+          boards, refreshed every hour.
         </p>
       </header>
       <Suspense fallback={<Skeleton className="h-11 w-full" />}>

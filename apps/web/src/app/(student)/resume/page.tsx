@@ -54,7 +54,7 @@ export default function ResumeLabPage() {
             </Button>
           </div>
         ) : data.items.length === 0 ? (
-          <div className="border-border text-muted-foreground rounded-xl border border-dashed p-8 text-center text-sm">
+          <div className="glass text-muted-foreground rounded-2xl border-dashed p-8 text-center text-sm">
             No resumes yet. Upload a PDF, DOCX or TXT above to get started.
           </div>
         ) : (
@@ -63,7 +63,7 @@ export default function ResumeLabPage() {
               <li key={r.id}>
                 <Link
                   href={`/resume/${r.id}`}
-                  className="border-border bg-card/70 hover:border-primary/50 flex items-center justify-between gap-4 rounded-xl border p-4 transition-colors"
+                  className="glass glass-interactive flex items-center justify-between gap-4 rounded-2xl p-4"
                 >
                   <div className="min-w-0">
                     <p className="truncate font-medium">{r.title}</p>

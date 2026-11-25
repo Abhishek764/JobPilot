@@ -47,7 +47,7 @@ const Metric = ({
 }) => (
   <Link
     href={href}
-    className="rise-in border-border bg-card/70 hover:border-primary/50 focus-visible:ring-ring rounded-xl border p-5 transition-colors focus-visible:outline-none focus-visible:ring-2"
+    className="glass glass-interactive rise-in focus-visible:ring-ring rounded-2xl p-5 focus-visible:outline-none focus-visible:ring-2"
   >
     <p className="text-muted-foreground text-xs font-medium uppercase tracking-wide">{label}</p>
     <p className="mt-2 text-3xl font-semibold tabular-nums tracking-tight">{value}</p>
@@ -59,12 +59,9 @@ const SearchHero = () => {
   const router = useRouter();
   const [q, setQ] = useState('');
   return (
-    <section
-      className="hero-glow border-border rounded-2xl border p-6 md:p-10"
-      aria-labelledby="hero-h"
-    >
+    <section className="glass rounded-3xl p-6 md:p-10" aria-labelledby="hero-h">
       <h1 id="hero-h" className="text-3xl font-semibold tracking-tight md:text-4xl">
-        What do you want to work on next?
+        Find your next job
       </h1>
       <p className="text-muted-foreground mt-2 max-w-xl text-sm">
         Search real listings, then check your fit against your own resume before you apply.
@@ -154,7 +151,7 @@ const Sections = ({ summary }: { summary: DashboardSummary }) => {
             </Link>
           </div>
           {recommendedJobs.length === 0 ? (
-            <div className="border-border text-muted-foreground rounded-xl border border-dashed p-8 text-sm">
+            <div className="glass text-muted-foreground rounded-2xl border-dashed p-8 text-sm">
               No match analyses yet. Open any job and choose{' '}
               <strong className="text-foreground">Analyze my fit</strong> to see how your resume
               lines up.
@@ -165,7 +162,7 @@ const Sections = ({ summary }: { summary: DashboardSummary }) => {
                 <li key={job.id}>
                   <Link
                     href={`/jobs/${job.id}`}
-                    className="border-border bg-card/70 hover:border-primary/50 flex items-center justify-between gap-4 rounded-xl border p-4 transition-colors"
+                    className="glass glass-interactive flex items-center justify-between gap-4 rounded-2xl p-4"
                   >
                     <div className="min-w-0">
                       <p className="truncate font-medium">{job.title}</p>
@@ -196,7 +193,7 @@ const Sections = ({ summary }: { summary: DashboardSummary }) => {
             Needs your attention
           </h2>
           {attentionItems.length === 0 ? (
-            <div className="border-border text-muted-foreground rounded-xl border border-dashed p-8 text-sm">
+            <div className="glass text-muted-foreground rounded-2xl border-dashed p-8 text-sm">
               You’re all caught up.
             </div>
           ) : (
@@ -205,7 +202,7 @@ const Sections = ({ summary }: { summary: DashboardSummary }) => {
                 <li key={`${item.kind}-${item.id}`}>
                   <Link
                     href={safeHref(item.href)}
-                    className="border-border bg-card/70 hover:border-primary/50 flex items-center gap-3 rounded-lg border p-3 text-sm transition-colors"
+                    className="glass glass-interactive flex items-center gap-3 rounded-lg p-3 text-sm"
                   >
                     <Badge variant="outline" className="shrink-0">
                       {ATTENTION_LABEL[item.kind]}

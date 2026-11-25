@@ -17,24 +17,36 @@
     --border: 228 18% 88%;
     --input: 228 18% 88%;
     --ring: 243 75% 59%;
-    --radius: 0.75rem;
+    --radius: 0.875rem;
   }
 
-  /* Command Center: dark, low-glare surfaces with an indigo→cyan accent. */
+  /*
+   * Liquid glass, dark. Graphite neutrals, translucent white surfaces, and a
+   * single accent (Apple system blue). Colour comes from content, not chrome.
+   */
   .dark {
-    --background: 232 30% 6%;
-    --foreground: 228 30% 96%;
-    --card: 232 26% 9%;
-    --card-foreground: 228 30% 96%;
-    --primary: 245 90% 70%;
-    --primary-foreground: 232 30% 8%;
-    --accent: 189 90% 55%;
-    --accent-foreground: 232 30% 8%;
-    --muted: 232 20% 14%;
-    --muted-foreground: 228 14% 66%;
-    --border: 232 18% 18%;
-    --input: 232 18% 20%;
-    --ring: 245 90% 70%;
+    --background: 220 8% 5%;
+    --foreground: 0 0% 97%;
+    --card: 220 7% 11%;
+    --card-foreground: 0 0% 97%;
+    --primary: 211 100% 52%;
+    --primary-foreground: 0 0% 100%;
+    --accent: 211 100% 62%;
+    --accent-foreground: 0 0% 100%;
+    --muted: 220 6% 17%;
+    --muted-foreground: 220 8% 66%;
+    --border: 220 6% 21%;
+    --input: 220 6% 23%;
+    --ring: 211 100% 52%;
+
+    /* Glass material */
+    --glass-fill: 0 0% 100% / 0.06;
+    --glass-fill-strong: 220 8% 14% / 0.62;
+    --glass-fill-hover: 0 0% 100% / 0.1;
+    --glass-edge: 0 0% 100% / 0.12;
+    --glass-edge-hover: 0 0% 100% / 0.22;
+    --glass-highlight: 0 0% 100% / 0.18;
+    --glass-blur: 22px;
   }
 }
 
@@ -42,37 +54,172 @@
   * {
     @apply border-border;
   }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
   body {
     @apply bg-background text-foreground;
+    font-feature-settings:
+      'ss01' on,
+      'cv11' on;
+    letter-spacing: -0.006em;
   }
+
+  /*
+   * Ambient backdrop the glass refracts: soft graphite light, barely moving.
+   * Fixed + pointer-events:none so it never affects layout or input.
+   */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: -20vmax;
+    z-index: -1;
+    pointer-events: none;
+    background:
+      radial-gradient(55vmax 45vmax at 15% 0%, hsl(215 14% 34% / 0.45), transparent 65%),
+      radial-gradient(50vmax 50vmax at 90% 85%, hsl(220 10% 26% / 0.5), transparent 65%),
+      radial-gradient(35vmax 30vmax at 70% 25%, hsl(211 60% 45% / 0.08), transparent 70%);
+    filter: blur(40px);
+    animation: ambient-drift 60s ease-in-out infinite alternate;
+    will-change: transform;
+  }
+
   h1,
   h2,
   h3 {
     text-wrap: balance;
+    letter-spacing: -0.022em;
+  }
+
+  ::selection {
+    background: hsl(var(--primary) / 0.35);
   }
 }
 
 @layer components {
-  /* Restrained glow behind the Command Center hero. */
-  .hero-glow {
-    background:
-      radial-gradient(60% 120% at 0% 0%, hsl(var(--primary) / 0.18), transparent 60%),
-      radial-gradient(50% 120% at 100% 0%, hsl(var(--accent) / 0.12), transparent 60%);
+  /* Base glass: cards, tiles, panels. */
+  .glass {
+    background: linear-gradient(
+      180deg,
+      hsl(var(--glass-fill-hover)) 0%,
+      hsl(var(--glass-fill)) 38%,
+      hsl(var(--glass-fill)) 100%
+    );
+    border: 1px solid hsl(var(--glass-edge));
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(170%);
+    backdrop-filter: blur(var(--glass-blur)) saturate(170%);
+    box-shadow:
+      inset 0 1px 0 hsl(var(--glass-highlight)),
+      inset 0 -1px 0 hsl(0 0% 100% / 0.03),
+      0 12px 32px -16px rgb(0 0 0 / 0.55);
+  }
+
+  /* Denser glass for chrome that floats over content: nav, drawers, menus. */
+  .glass-strong {
+    background: hsl(var(--glass-fill-strong));
+    border: 1px solid hsl(var(--glass-edge));
+    -webkit-backdrop-filter: blur(28px) saturate(180%);
+    backdrop-filter: blur(28px) saturate(180%);
+    box-shadow:
+      inset 0 1px 0 hsl(var(--glass-highlight)),
+      0 24px 60px -24px rgb(0 0 0 / 0.7);
+  }
+
+  /* Interactive glass (linked cards): brighten and lift a hair on hover, press in on tap. */
+  .glass-interactive {
+    transition:
+      transform 400ms cubic-bezier(0.22, 1, 0.36, 1),
+      background-color 300ms ease,
+      border-color 300ms ease,
+      box-shadow 400ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .glass-interactive:hover {
+    background-color: hsl(var(--glass-fill-hover));
+    border-color: hsl(var(--glass-edge-hover));
+    transform: translateY(-2px);
+    box-shadow:
+      inset 0 1px 0 hsl(var(--glass-highlight)),
+      0 20px 40px -18px rgb(0 0 0 / 0.65),
+      0 0 0 1px hsl(var(--primary) / 0.12);
+  }
+  .glass-interactive:active {
+    transform: translateY(0) scale(0.99);
+    transition-duration: 120ms;
+  }
+
+  /* Translucent field for inputs, selects and textareas. */
+  .glass-field {
+    background: hsl(0 0% 100% / 0.05);
+    border: 1px solid hsl(0 0% 100% / 0.1);
+    transition:
+      background-color 200ms ease,
+      border-color 200ms ease,
+      box-shadow 200ms ease;
+  }
+  .glass-field:hover {
+    border-color: hsl(0 0% 100% / 0.18);
+  }
+  .glass-field:focus-visible {
+    background: hsl(0 0% 100% / 0.08);
+    border-color: hsl(var(--primary) / 0.6);
+    box-shadow: 0 0 0 4px hsl(var(--primary) / 0.18);
+    outline: none;
   }
 
   .rise-in {
-    animation: rise-in 420ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+    animation: rise-in 600ms cubic-bezier(0.22, 1, 0.36, 1) both;
   }
 }
 
 @keyframes rise-in {
   from {
     opacity: 0;
-    transform: translateY(6px);
+    transform: translateY(10px) scale(0.99);
+    filter: blur(4px);
   }
   to {
     opacity: 1;
     transform: none;
+    filter: none;
+  }
+}
+
+@keyframes ambient-drift {
+  0% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+  50% {
+    transform: translate3d(2vmax, -1.5vmax, 0) rotate(6deg);
+  }
+  100% {
+    transform: translate3d(-2vmax, 1.5vmax, 0) rotate(-4deg);
+  }
+}
+
+/* Users who ask the OS for less transparency get solid, readable surfaces. */
+@media (prefers-reduced-transparency: reduce) {
+  .glass,
+  .glass-strong {
+    background: hsl(var(--card));
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  body::before {
+    display: none;
+  }
+}
+
+/* Browsers without backdrop-filter: fall back to an opaque tint. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .glass {
+    background: hsl(var(--card) / 0.92);
+  }
+  .glass-strong {
+    background: hsl(var(--card) / 0.97);
   }
 }
 
@@ -84,5 +231,8 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+  .glass-interactive:hover {
+    transform: none;
   }
 }

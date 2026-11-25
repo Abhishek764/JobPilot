@@ -11,13 +11,14 @@ export const positionBetween = (prev?: number, next?: number): number => {
   return (prev + next) / 2;
 };
 
+/** Status dot colours (Apple system palette). */
 export const COLUMN_ACCENT: Record<BoardColumnStatus, string> = {
-  SAVED: 'border-t-slate-400',
-  APPLIED: 'border-t-blue-500',
-  OA: 'border-t-amber-500',
-  INTERVIEW: 'border-t-violet-500',
-  OFFER: 'border-t-emerald-500',
-  REJECTED: 'border-t-rose-500',
+  SAVED: 'bg-zinc-400',
+  APPLIED: 'bg-[#0A84FF]',
+  OA: 'bg-[#FFD60A]',
+  INTERVIEW: 'bg-[#64D2FF]',
+  OFFER: 'bg-[#30D158]',
+  REJECTED: 'bg-[#FF453A]',
 };
 
 export const columnDroppableId = (status: string): string => `col:${status}`;

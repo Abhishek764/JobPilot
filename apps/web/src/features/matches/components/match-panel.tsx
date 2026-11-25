@@ -65,10 +65,7 @@ export const MatchPanel = ({
     );
 
   return (
-    <section
-      aria-labelledby="fit-h"
-      className="border-border bg-card/70 space-y-4 rounded-xl border p-5"
-    >
+    <section aria-labelledby="fit-h" className="glass space-y-4 rounded-2xl p-5">
       <div>
         <h2 id="fit-h" className="font-semibold tracking-tight">
           Your fit for this role

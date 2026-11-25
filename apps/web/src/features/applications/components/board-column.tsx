@@ -22,22 +22,20 @@ export const BoardColumn = ({ status, items, onSelect }: Props) => {
 
   return (
     <section className="flex w-72 shrink-0 flex-col">
-      <div
-        className={cn(
-          'flex items-center justify-between rounded-t-md border-t-4 px-1 pb-2',
-          COLUMN_ACCENT[status],
-        )}
-      >
-        <h2 className="text-sm font-semibold">{STATUS_LABELS[status]}</h2>
-        <span className="bg-muted text-muted-foreground rounded-full px-2 py-0.5 text-xs">
+      <div className="flex items-center justify-between px-2 pb-2">
+        <h2 className="flex items-center gap-2 text-sm font-semibold">
+          <span aria-hidden className={cn('h-2 w-2 rounded-full', COLUMN_ACCENT[status])} />
+          {STATUS_LABELS[status]}
+        </h2>
+        <span className="text-muted-foreground rounded-full bg-white/[0.08] px-2 py-0.5 text-xs tabular-nums">
           {items.length}
         </span>
       </div>
       <div
         ref={setNodeRef}
         className={cn(
-          'bg-muted/40 flex min-h-32 flex-1 flex-col gap-2 rounded-md p-2 transition-colors',
-          isOver && 'bg-muted',
+          'ease-spring flex min-h-32 flex-1 flex-col gap-2 rounded-2xl border border-white/[0.06] bg-white/[0.03] p-2 transition-colors duration-300',
+          isOver && 'border-primary/40 bg-primary/[0.08]',
         )}
       >
         <SortableContext items={items.map((i) => i.id)} strategy={verticalListSortingStrategy}>

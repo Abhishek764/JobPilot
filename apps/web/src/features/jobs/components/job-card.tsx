@@ -10,7 +10,7 @@ export const JobCard = ({ job }: { job: Job }) => {
   return (
     <Link
       href={`/jobs/${job.id}`}
-      className="border-border bg-card hover:border-primary/60 focus-visible:ring-ring group block rounded-xl border p-5 transition-colors focus-visible:outline-none focus-visible:ring-2"
+      className="glass glass-interactive focus-visible:ring-ring group block rounded-2xl p-5 focus-visible:outline-none focus-visible:ring-2"
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">

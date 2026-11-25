@@ -11,10 +11,7 @@ import { useMatchesForResume } from '../hooks';
 export const ResumeMatches = ({ resumeId }: { resumeId: string }) => {
   const { data, isPending, isError, refetch } = useMatchesForResume(resumeId);
   return (
-    <section
-      aria-labelledby="rm-h"
-      className="border-border bg-card/70 space-y-3 rounded-xl border p-5"
-    >
+    <section aria-labelledby="rm-h" className="glass space-y-3 rounded-2xl p-5">
       <h2 id="rm-h" className="font-semibold tracking-tight">
         Job matches
       </h2>

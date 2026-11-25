@@ -1,6 +1,9 @@
 import type { Config } from 'tailwindcss';
 import animate from 'tailwindcss-animate';
 
+/** `<alpha-value>` lets opacity modifiers (bg-card/70, border-primary/40) work on token colours. */
+const token = (name: string) => `hsl(var(--${name}) / <alpha-value>)`;
+
 const config: Config = {
   darkMode: ['class'],
   content: ['./src/**/*.{ts,tsx}'],
@@ -11,34 +14,41 @@ const config: Config = {
       screens: { '2xl': '1400px' },
     },
     extend: {
+      fontFamily: {
+        // San Francisco on Apple devices, Inter everywhere else.
+        sans: [
+          '-apple-system',
+          'BlinkMacSystemFont',
+          '"SF Pro Text"',
+          'var(--font-inter)',
+          'system-ui',
+          'sans-serif',
+        ],
+      },
       colors: {
-        background: 'hsl(var(--background))',
-        foreground: 'hsl(var(--foreground))',
-        primary: {
-          DEFAULT: 'hsl(var(--primary))',
-          foreground: 'hsl(var(--primary-foreground))',
-        },
-        accent: {
-          DEFAULT: 'hsl(var(--accent))',
-          foreground: 'hsl(var(--accent-foreground))',
-        },
-        muted: {
-          DEFAULT: 'hsl(var(--muted))',
-          foreground: 'hsl(var(--muted-foreground))',
-        },
-        border: 'hsl(var(--border))',
-        input: 'hsl(var(--input))',
-        ring: 'hsl(var(--ring))',
-        card: {
-          DEFAULT: 'hsl(var(--card))',
-          foreground: 'hsl(var(--card-foreground))',
-        },
+        background: token('background'),
+        foreground: token('foreground'),
+        primary: { DEFAULT: token('primary'), foreground: token('primary-foreground') },
+        accent: { DEFAULT: token('accent'), foreground: token('accent-foreground') },
+        muted: { DEFAULT: token('muted'), foreground: token('muted-foreground') },
+        border: token('border'),
+        input: token('input'),
+        ring: token('ring'),
+        card: { DEFAULT: token('card'), foreground: token('card-foreground') },
       },
       borderRadius: {
+        '3xl': '1.75rem',
+        '2xl': '1.25rem',
+        xl: '1rem',
         lg: 'var(--radius)',
         md: 'calc(var(--radius) - 2px)',
         sm: 'calc(var(--radius) - 4px)',
       },
+      transitionTimingFunction: {
+        // Apple-like ease-out with a soft settle.
+        spring: 'cubic-bezier(0.22, 1, 0.36, 1)',
+      },
+      transitionDuration: { 400: '400ms' },
     },
   },
   plugins: [animate],

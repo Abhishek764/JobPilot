@@ -35,7 +35,7 @@ export const ApplicationCard = ({ application, onSelect, overlay }: Props) => {
       {...listeners}
       onClick={() => onSelect(application.id)}
       className={cn(
-        'bg-card focus-visible:ring-ring w-full cursor-grab rounded-md border p-3 text-left shadow-sm transition-shadow hover:shadow-md focus:outline-none focus-visible:ring-2 active:cursor-grabbing',
+        'glass glass-interactive focus-visible:ring-primary/25 w-full cursor-grab rounded-xl p-3 text-left focus:outline-none focus-visible:ring-4 active:cursor-grabbing',
         isDragging && !overlay && 'opacity-40',
         overlay && 'cursor-grabbing shadow-lg',
       )}
