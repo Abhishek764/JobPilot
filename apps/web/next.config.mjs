@@ -13,6 +13,8 @@ const nextConfig = {
     typedRoutes: true,
   },
   transpilePackages: ['@jobpilot/types'],
+  // Backdrop photo is served at q90; Next 16 requires listing non-default qualities.
+  images: { qualities: [75, 90] },
   async headers() {
     return [
       {
