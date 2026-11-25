@@ -1,7 +1,7 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { EXPERIENCE_LEVELS } from '@jobpilot/types';
+import { EXPERIENCE_LABELS, EXPERIENCE_LEVELS } from '@jobpilot/types';
 import { UpdateProfileSchema, type UpdateProfileInput } from '@jobpilot/types/schemas';
 import { useTransition, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
@@ -67,7 +67,7 @@ export const SettingsForm = ({ defaults }: Props) => {
         >
           {EXPERIENCE_LEVELS.map((lvl) => (
             <option key={lvl} value={lvl}>
-              {lvl}
+              {EXPERIENCE_LABELS[lvl]}
             </option>
           ))}
         </Select>

@@ -1,7 +1,7 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { EXPERIENCE_LEVELS } from '@jobpilot/types';
+import { EXPERIENCE_LABELS, EXPERIENCE_LEVELS } from '@jobpilot/types';
 import { OnboardingSchema, type OnboardingInput } from '@jobpilot/types/schemas';
 import { ArrowLeft, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { useTransition, useState } from 'react';
@@ -24,16 +24,6 @@ const STEPS = [
   { id: 'links', title: 'Links', desc: 'Resume + socials (optional).' },
 ] as const;
 
-const EXPERIENCE_LABELS: Record<(typeof EXPERIENCE_LEVELS)[number], string> = {
-  INTERN: 'Intern',
-  JUNIOR: 'Junior (0–2 yrs)',
-  MID: 'Mid (2–5 yrs)',
-  SENIOR: 'Senior (5–8 yrs)',
-  STAFF: 'Staff (8–12 yrs)',
-  PRINCIPAL: 'Principal (12+ yrs)',
-  EXECUTIVE: 'Executive',
-};
-
 type StepFields = Record<(typeof STEPS)[number]['id'], (keyof OnboardingInput)[]>;
 const STEP_FIELDS: StepFields = {
   basics: ['name', 'location'],
@@ -49,11 +39,12 @@ export const OnboardingForm = ({ defaultName }: { defaultName?: string }) => {
 
   const form = useForm<OnboardingInput>({
     resolver: zodResolver(OnboardingSchema),
-    mode: 'onBlur',
+    // Re-validate on change: tag inputs never blur the underlying field, so errors would stick.
+    mode: 'onChange',
     defaultValues: {
       name: defaultName ?? '',
       location: '',
-      experienceLevel: 'MID',
+      experienceLevel: 'INTERN',
       bio: '',
       skills: [],
       preferredRoles: [],
@@ -202,7 +193,7 @@ export const OnboardingForm = ({ defaultName }: { defaultName?: string }) => {
                       value={field.value ?? []}
                       onChange={field.onChange}
                       ariaInvalid={!!errors.preferredRoles}
-                      placeholder="Senior Software Engineer, Staff Engineer..."
+                      placeholder="Software Engineering Intern, Data Analyst..."
                     />
                   )}
                 />

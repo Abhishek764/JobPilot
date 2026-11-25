@@ -79,6 +79,12 @@ export const useUploadResume = (onStage: (s: UploadStage) => void) => {
       } catch (err) {
         // The row was created for this upload; remove it so no stuck PENDING resume remains.
         await resumesApi.remove(await token(), ticket.resume.id).catch(() => undefined);
+        // fetch() rejects with a bare TypeError ("Failed to fetch") on network/DNS/CORS errors.
+        if (err instanceof TypeError) {
+          throw new Error(
+            "Couldn't reach file storage. Check your internet connection and try again.",
+          );
+        }
         throw err;
       }
       onStage('ingesting');

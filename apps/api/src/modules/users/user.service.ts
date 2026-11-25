@@ -1,18 +1,25 @@
 import type { User } from '@jobpilot/db';
 import type { OnboardingInput, UpdateProfileInput } from '@jobpilot/types/schemas';
 
-import { BadRequestError, NotFoundError } from '../../shared/errors';
+import { BadRequestError } from '../../shared/errors';
 
+import { fetchClerkProfile } from './clerk-profile';
 import { userRepository } from './user.repository';
 
 const stripUndefined = <T extends object>(obj: T): Partial<T> =>
   Object.fromEntries(Object.entries(obj).filter(([, v]) => v !== undefined)) as Partial<T>;
 
 export const userService = {
+  /**
+   * Resolve the app user for an authenticated Clerk id. The Clerk webhook normally creates
+   * the row; if it hasn't (local dev, a fresh deploy without webhooks), provision it from
+   * Clerk on first use so a signed-in student never dead-ends on "User not found".
+   */
   async getByClerkId(clerkId: string): Promise<User> {
-    const user = await userRepository.findByClerkId(clerkId);
-    if (!user) throw new NotFoundError('User');
-    return user;
+    return (
+      (await userRepository.findByClerkId(clerkId)) ??
+      userRepository.upsertFromClerk(await fetchClerkProfile(clerkId))
+    );
   },
 
   ensureByClerkId: userRepository.findByClerkId,

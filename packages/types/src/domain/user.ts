@@ -12,6 +12,16 @@ export const EXPERIENCE_LEVELS = [
 ] as const;
 export type ExperienceLevel = (typeof EXPERIENCE_LEVELS)[number];
 
+export const EXPERIENCE_LABELS: Record<ExperienceLevel, string> = {
+  INTERN: 'Intern',
+  JUNIOR: 'Junior (0–2 yrs)',
+  MID: 'Mid (2–5 yrs)',
+  SENIOR: 'Senior (5–8 yrs)',
+  STAFF: 'Staff (8–12 yrs)',
+  PRINCIPAL: 'Principal (12+ yrs)',
+  EXECUTIVE: 'Executive',
+};
+
 export interface User {
   id: string;
   clerkId: string;

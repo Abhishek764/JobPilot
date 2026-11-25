@@ -28,17 +28,26 @@ const buttonVariants = cva(
 );
 
 export interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof buttonVariants> {
+  extends React.ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof buttonVariants> {
   asChild?: boolean;
   loading?: boolean;
 }
 
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, asChild = false, loading = false, children, disabled, ...props }, ref) => {
-    const Comp = asChild ? Slot : 'button';
+  (
+    { className, variant, size, asChild = false, loading = false, children, disabled, ...props },
+    ref,
+  ) => {
+    // Slot requires exactly one child, so asChild buttons skip the loading spinner.
+    if (asChild) {
+      return (
+        <Slot ref={ref} className={cn(buttonVariants({ variant, size, className }))} {...props}>
+          {children}
+        </Slot>
+      );
+    }
     return (
-      <Comp
+      <button
         ref={ref}
         className={cn(buttonVariants({ variant, size, className }))}
         disabled={disabled || loading}
@@ -49,7 +58,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
         ) : null}
         {children}
-      </Comp>
+      </button>
     );
   },
 );

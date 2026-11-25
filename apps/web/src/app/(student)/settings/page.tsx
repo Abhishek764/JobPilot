@@ -53,7 +53,7 @@ export default async function SettingsPage() {
               name: me.name ?? '',
               bio: me.bio ?? '',
               location: me.location ?? '',
-              experienceLevel: me.experienceLevel ?? 'MID',
+              experienceLevel: me.experienceLevel ?? 'INTERN',
               skills: me.skills,
               preferredRoles: me.preferredRoles,
               resumeUrl: me.resumeUrl,
