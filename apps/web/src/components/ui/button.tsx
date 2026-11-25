@@ -15,7 +15,7 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        // Solid system-blue pill with a faint top highlight, as in iOS/macOS.
+        // Soft white pill with a faint top highlight, as in visionOS/iOS controls.
         default:
           'bg-primary text-primary-foreground shadow-[inset_0_1px_0_hsl(0_0%_100%/0.25)] hover:brightness-110',
         destructive:
