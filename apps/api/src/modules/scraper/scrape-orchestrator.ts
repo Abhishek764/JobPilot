@@ -4,8 +4,8 @@ import type { SourcePlatform } from '@jobpilot/types';
 import { env } from '../../config/env';
 import { enqueueListing } from '../queue/queues';
 
-import { scrapeRunRepository } from './scrape-run.repository';
 import { scraperRegistry } from './core/registry';
+import { scrapeRunRepository } from './scrape-run.repository';
 
 export interface TriggerRunInput {
   platform: SourcePlatform;

@@ -1,6 +1,5 @@
 'use client';
 
-import type { Application, Board, BoardColumnStatus } from '@jobpilot/types';
 import {
   DndContext,
   DragOverlay,
@@ -13,6 +12,7 @@ import {
   type DragStartEvent,
 } from '@dnd-kit/core';
 import { arrayMove } from '@dnd-kit/sortable';
+import type { Application, Board, BoardColumnStatus } from '@jobpilot/types';
 import { Search } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 
@@ -58,9 +58,7 @@ export const KanbanBoard = ({ onSelect }: Props) => {
     if (data && !activeId) setColumns(data.columns);
   }, [data, activeId]);
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
-  );
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
 
   const findContainer = (id: string): BoardColumnStatus | null => {
     if (isColumnId(id)) return statusFromColumnId(id) as BoardColumnStatus;
@@ -137,7 +135,7 @@ export const KanbanBoard = ({ onSelect }: Props) => {
     <div className="flex h-full flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="relative w-full max-w-xs">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Search className="text-muted-foreground pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2" />
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}

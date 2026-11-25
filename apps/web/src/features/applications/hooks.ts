@@ -2,12 +2,7 @@
 
 import { useAuth } from '@clerk/nextjs';
 import type { Application, Board } from '@jobpilot/types';
-import {
-  useMutation,
-  useQuery,
-  useQueryClient,
-  type QueryClient,
-} from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
 
 import { applicationsApi, type BoardFilters } from './api';
@@ -198,5 +193,14 @@ export const useDeleteReminder = (id: string) => {
     mutationFn: async (reminderId: string) =>
       applicationsApi.reminders.remove(await token(), id, reminderId),
     onSuccess: () => invalidateReminders(qc, id),
+  });
+};
+
+/** Persisted counts by status, upcoming reminders and latest activity. */
+export const useApplicationInsights = () => {
+  const token = useToken();
+  return useQuery({
+    queryKey: applicationKeys.insights,
+    queryFn: async () => applicationsApi.insights(await token()),
   });
 };

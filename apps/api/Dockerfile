@@ -20,11 +20,15 @@ RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
 
 # -------- build --------
 FROM deps AS build
+COPY turbo.json ./
 COPY packages packages
 COPY apps/api apps/api
 RUN pnpm --filter @jobpilot/db generate
-RUN pnpm --filter @jobpilot/api build
+# Builds @jobpilot/{types,logger,db} to dist/ first, then the API.
+RUN pnpm turbo run build --filter=@jobpilot/api
 RUN pnpm --filter @jobpilot/api deploy --prod /out
+# Generate the Prisma client inside the deployed node_modules (pnpm deploy reinstalls without it).
+RUN cp -r packages/db/prisma /out/prisma  && cd /out && /repo/packages/db/node_modules/.bin/prisma generate --schema=prisma/schema.prisma
 
 # -------- runtime --------
 FROM mcr.microsoft.com/playwright:v1.48.2-noble AS runtime
@@ -32,7 +36,7 @@ WORKDIR /app
 ENV NODE_ENV=production
 COPY --from=build /out/node_modules ./node_modules
 COPY --from=build /repo/apps/api/dist ./dist
-COPY --from=build /repo/packages/db/prisma ./prisma
+COPY --from=build /out/prisma ./prisma
 COPY --from=build /repo/apps/api/package.json ./package.json
 EXPOSE 4000
 USER pwuser

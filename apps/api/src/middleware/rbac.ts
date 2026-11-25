@@ -1,12 +1,15 @@
 import type { Role } from '@jobpilot/types';
 import type { NextFunction, Request, Response } from 'express';
 
-import { ForbiddenError, UnauthorizedError } from '../shared/errors';
 import { userService } from '../modules/users/user.service';
+import { ForbiddenError, UnauthorizedError } from '../shared/errors';
 
-declare module 'express-serve-static-core' {
-  interface Request {
-    user?: { id: string; clerkId: string; role: Role; onboardedAt: Date | null };
+declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
+  namespace Express {
+    interface Request {
+      user?: { id: string; clerkId: string; role: Role; onboardedAt: Date | null };
+    }
   }
 }
 
@@ -24,7 +27,11 @@ const loadUser = async (req: Request): Promise<NonNullable<Request['user']>> => 
   return req.user;
 };
 
-export const hydrateUser = async (req: Request, _res: Response, next: NextFunction): Promise<void> => {
+export const hydrateUser = async (
+  req: Request,
+  _res: Response,
+  next: NextFunction,
+): Promise<void> => {
   try {
     await loadUser(req);
     next();
@@ -33,7 +40,8 @@ export const hydrateUser = async (req: Request, _res: Response, next: NextFuncti
   }
 };
 
-export const requireRole = (...allowed: Role[]) =>
+export const requireRole =
+  (...allowed: Role[]) =>
   async (req: Request, _res: Response, next: NextFunction): Promise<void> => {
     try {
       const user = await loadUser(req);

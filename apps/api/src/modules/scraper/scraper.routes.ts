@@ -5,13 +5,14 @@ import { attachUserId, requireAuth } from '../../middleware/auth';
 import { requireRole } from '../../middleware/rbac';
 import { validate } from '../../middleware/validate';
 import { asyncHandler } from '../../shared/async-handler';
-import { registerScrapers } from './sources';
+import { enqueueFeedSyncForced } from '../queue/queues';
+import { syncScheduledSources } from '../queue/scheduler';
 
 import { scrapeOrchestrator } from './scrape-orchestrator';
 import { scrapeRunRepository } from './scrape-run.repository';
 import { scrapeSourceRepository } from './scrape-source.repository';
-import { syncScheduledSources } from '../queue/scheduler';
 import { scraperService } from './scraper.service';
+import { registerScrapers } from './sources';
 
 registerScrapers();
 
@@ -37,6 +38,16 @@ scraperRouter.post(
     const triggeredBy = (req as Request & { user?: { id: string } }).user?.id;
     const run = await scrapeOrchestrator.trigger({ ...input, triggeredBy });
     res.status(202).json({ success: true, data: run });
+  }),
+);
+
+/** Pull the public job-board feeds now instead of waiting for the next interval. */
+scraperRouter.post(
+  '/feeds/sync',
+  requireRole('ADMIN'),
+  asyncHandler(async (_req: Request, res: Response) => {
+    const job = await enqueueFeedSyncForced();
+    res.status(202).json({ success: true, data: { jobId: job.id } });
   }),
 );
 

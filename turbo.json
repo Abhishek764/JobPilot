@@ -13,12 +13,14 @@
         "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY",
         "GEMINI_API_KEY",
         "API_URL",
-        "NEXT_PUBLIC_API_URL"
+        "NEXT_PUBLIC_API_URL",
+        "NEXT_PUBLIC_APP_URL"
       ]
     },
     "dev": {
       "cache": false,
-      "persistent": true
+      "persistent": true,
+      "dependsOn": ["^build"]
     },
     "lint": {
       "dependsOn": ["^build"]

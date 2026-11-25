@@ -1,4 +1,12 @@
-export const SOURCE_PLATFORMS = ['LINKEDIN', 'WELLFOUND', 'INDEED', 'NAUKRI', 'CUSTOM'] as const;
+export const SOURCE_PLATFORMS = [
+  'LINKEDIN',
+  'WELLFOUND',
+  'INDEED',
+  'NAUKRI',
+  'REMOTIVE',
+  'ARBEITNOW',
+  'CUSTOM',
+] as const;
 export type SourcePlatform = (typeof SOURCE_PLATFORMS)[number];
 
 export const SALARY_PERIODS = ['HOURLY', 'DAILY', 'MONTHLY', 'YEARLY'] as const;

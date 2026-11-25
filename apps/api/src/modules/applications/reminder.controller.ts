@@ -1,6 +1,7 @@
 import type { Request, Response } from 'express';
 
 import { asyncHandler } from '../../shared/async-handler';
+import { param } from '../../shared/params';
 
 import { reminderService } from './reminder.service';
 
@@ -8,27 +9,31 @@ const getClerkId = (req: Request): string => (req as Request & { clerkUserId: st
 
 export const reminderController = {
   list: asyncHandler(async (req: Request, res: Response) => {
-    const reminders = await reminderService.list(getClerkId(req), req.params.id, req.query as never);
+    const reminders = await reminderService.list(
+      getClerkId(req),
+      param(req, 'id'),
+      req.query as never,
+    );
     res.json({ success: true, data: reminders });
   }),
 
   create: asyncHandler(async (req: Request, res: Response) => {
-    const reminder = await reminderService.create(getClerkId(req), req.params.id, req.body);
+    const reminder = await reminderService.create(getClerkId(req), param(req, 'id'), req.body);
     res.status(201).json({ success: true, data: reminder });
   }),
 
   update: asyncHandler(async (req: Request, res: Response) => {
     const reminder = await reminderService.update(
       getClerkId(req),
-      req.params.id,
-      req.params.reminderId,
+      param(req, 'id'),
+      param(req, 'reminderId'),
       req.body,
     );
     res.json({ success: true, data: reminder });
   }),
 
   remove: asyncHandler(async (req: Request, res: Response) => {
-    await reminderService.delete(getClerkId(req), req.params.id, req.params.reminderId);
+    await reminderService.delete(getClerkId(req), param(req, 'id'), param(req, 'reminderId'));
     res.status(204).send();
   }),
 };

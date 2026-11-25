@@ -1,5 +1,5 @@
-import type { JobMatch } from '@jobpilot/types';
 import { prisma } from '@jobpilot/db';
+import type { JobMatch } from '@jobpilot/types';
 
 import { env } from '../../config/env';
 import { logger } from '../../config/logger';
@@ -16,6 +16,13 @@ import {
 } from './ai.prompts';
 import { calibrate, skillOverlap, truncate } from './ai.scoring';
 import { estimateCostUsd, getModel } from './gemini.client';
+import {
+  buildResumeAnalysisPrompt,
+  buildTailorPrompt,
+  normalizeResumeAnalysis,
+  RESUME_ANALYSIS_SCHEMA,
+  type ResumeAnalysisResult,
+} from './resume-analysis';
 
 const safeJson = <T>(text: string): T => {
   const cleaned = text.replace(/```(?:json)?/g, '').trim();
@@ -59,7 +66,9 @@ export const aiService = {
       projectExperience: rawInput.projectExperience
         ? truncate(rawInput.projectExperience, env.AI_MAX_RESUME_CHARS)
         : undefined,
-      userSkills: Array.from(new Set(rawInput.userSkills.map((s) => s.toLowerCase().trim()).filter(Boolean))),
+      userSkills: Array.from(
+        new Set(rawInput.userSkills.map((s) => s.toLowerCase().trim()).filter(Boolean)),
+      ),
     };
 
     const promptHash = hashPrompt(operation, model, input);
@@ -120,7 +129,9 @@ export const aiService = {
       tokensOut = usage?.candidatesTokenCount ?? 0;
     } catch (err) {
       logger.error({ err: String(err), track: input.track }, 'gemini match call failed');
-      throw err instanceof UpstreamError ? err : new UpstreamError('AI provider error', { err: String(err) });
+      throw err instanceof UpstreamError
+        ? err
+        : new UpstreamError('AI provider error', { err: String(err) });
     }
 
     const overlap = opts.jobSkillsHint?.length
@@ -147,7 +158,16 @@ export const aiService = {
       metadata: { track: input.track, promptHash },
     });
 
-    return { result: calibrated, model, tokensIn, tokensOut, costUsd, cacheHit: false, promptHash, durationMs };
+    return {
+      result: calibrated,
+      model,
+      tokensIn,
+      tokensOut,
+      costUsd,
+      cacheHit: false,
+      promptHash,
+      durationMs,
+    };
   },
 
   async recordUsage(params: {
@@ -180,6 +200,161 @@ export const aiService = {
     }
   },
 
+  /**
+   * Draft a cover letter grounded only in the resume and job text. Plain text out;
+   * the student reviews and edits before using it.
+   */
+  async generateCoverLetter(input: {
+    resumeContent: string;
+    jobDescription: string;
+    tone: 'PROFESSIONAL' | 'ENTHUSIASTIC' | 'CONCISE' | 'STORYTELLING';
+    candidateName: string | null;
+    company: string | null;
+    role: string | null;
+    userId?: string;
+  }): Promise<{
+    content: string;
+    model: string;
+    tokensIn: number;
+    tokensOut: number;
+    costUsd: number;
+  }> {
+    const modelName = env.GEMINI_RESUME_MODEL;
+    const toneGuide: Record<typeof input.tone, string> = {
+      PROFESSIONAL: 'polished and professional',
+      ENTHUSIASTIC: 'warm and genuinely enthusiastic, without hype',
+      CONCISE: 'brief and direct — under 200 words',
+      STORYTELLING: 'built around one concrete story from the resume',
+    };
+    const prompt = [
+      'Write a cover letter for a student or early-career candidate.',
+      `Tone: ${toneGuide[input.tone]}.`,
+      'Rules:',
+      '- Use ONLY experience, skills, projects and facts present in the RESUME. Never invent employers, metrics, degrees or skills.',
+      '- Connect 2-3 specific resume items to specific needs in the JOB DESCRIPTION.',
+      '- Do not mention or infer age, gender, race, religion, health, disability, nationality, family status or politics.',
+      '- No placeholders like [Your Name]; if a name or company is unknown, write around it.',
+      '- Return only the letter body as plain text with paragraphs separated by blank lines.',
+      input.candidateName ? `Candidate name: ${input.candidateName}` : '',
+      input.company ? `Company: ${input.company}` : '',
+      input.role ? `Role: ${input.role}` : '',
+      '',
+      'RESUME:',
+      truncate(input.resumeContent, env.AI_MAX_RESUME_CHARS),
+      '',
+      'JOB DESCRIPTION:',
+      truncate(input.jobDescription, env.AI_MAX_JOB_CHARS),
+    ]
+      .filter((line) => line !== '')
+      .join('\n');
+
+    const started = Date.now();
+    const result = await getModel(modelName).generateContent(prompt);
+    const content = result.response.text().trim();
+    if (content.length < 50) throw new UpstreamError('AI returned an empty cover letter');
+
+    const usage = result.response.usageMetadata;
+    const tokensIn = usage?.promptTokenCount ?? 0;
+    const tokensOut = usage?.candidatesTokenCount ?? 0;
+    const costUsd = estimateCostUsd(modelName, tokensIn, tokensOut);
+    await this.recordUsage({
+      userId: input.userId,
+      operation: 'cover-letter.generate',
+      model: modelName,
+      tokensIn,
+      tokensOut,
+      cached: false,
+      costUsd,
+      durationMs: Date.now() - started,
+    });
+    return { content, model: modelName, tokensIn, tokensOut, costUsd };
+  },
+
+  /** ATS + recruiter-style review of a resume, optionally against one job. */
+  async analyzeResume(input: {
+    resumeContent: string;
+    jobDescription: string | null;
+    userId?: string;
+  }): Promise<
+    ResumeAnalysisResult & { model: string; tokensIn: number; tokensOut: number; costUsd: number }
+  > {
+    const modelName = env.GEMINI_RESUME_MODEL;
+    const prompt = buildResumeAnalysisPrompt(
+      truncate(input.resumeContent, env.AI_MAX_RESUME_CHARS),
+      input.jobDescription ? truncate(input.jobDescription, env.AI_MAX_JOB_CHARS) : null,
+    );
+    const started = Date.now();
+    const result = await getModel(modelName).generateContent({
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      generationConfig: {
+        temperature: 0.2,
+        responseMimeType: 'application/json',
+        responseSchema: RESUME_ANALYSIS_SCHEMA,
+      },
+    });
+    const parsed = normalizeResumeAnalysis(
+      safeJson<unknown>(result.response.text()),
+      Boolean(input.jobDescription),
+    );
+    const usage = result.response.usageMetadata;
+    const tokensIn = usage?.promptTokenCount ?? 0;
+    const tokensOut = usage?.candidatesTokenCount ?? 0;
+    const costUsd = estimateCostUsd(modelName, tokensIn, tokensOut);
+    await this.recordUsage({
+      userId: input.userId,
+      operation: 'resume.analyze',
+      model: modelName,
+      tokensIn,
+      tokensOut,
+      cached: false,
+      costUsd,
+      durationMs: Date.now() - started,
+    });
+    return { ...parsed, model: modelName, tokensIn, tokensOut, costUsd };
+  },
+
+  /** Tailored Markdown resume for one job, grounded only in the resume's own facts. */
+  async tailorResume(input: {
+    resumeContent: string;
+    jobDescription: string;
+    userId?: string;
+  }): Promise<{
+    markdown: string;
+    model: string;
+    tokensIn: number;
+    tokensOut: number;
+    costUsd: number;
+  }> {
+    const modelName = env.GEMINI_RESUME_MODEL;
+    const prompt = buildTailorPrompt(
+      truncate(input.resumeContent, env.AI_MAX_RESUME_CHARS),
+      truncate(input.jobDescription, env.AI_MAX_JOB_CHARS),
+    );
+    const started = Date.now();
+    const result = await getModel(modelName).generateContent(prompt);
+    const markdown = result.response
+      .text()
+      .replace(/^```(?:markdown|md)?\s*/i, '')
+      .replace(/```\s*$/, '')
+      .trim();
+    if (markdown.length < 100) throw new UpstreamError('AI returned an empty resume');
+    const usage = result.response.usageMetadata;
+    const tokensIn = usage?.promptTokenCount ?? 0;
+    const tokensOut = usage?.candidatesTokenCount ?? 0;
+    const costUsd = estimateCostUsd(modelName, tokensIn, tokensOut);
+    await this.recordUsage({
+      userId: input.userId,
+      operation: 'resume.tailor',
+      model: modelName,
+      tokensIn,
+      tokensOut,
+      cached: false,
+      costUsd,
+      durationMs: Date.now() - started,
+    });
+    return { markdown, model: modelName, tokensIn, tokensOut, costUsd };
+  },
+
   // Legacy Gemini-backed helpers kept for backwards compatibility with existing controllers.
   async matchResumeToJob(resumeContent: string, jobDescription: string): Promise<JobMatch> {
     const model = getModel();
@@ -209,7 +384,9 @@ ${description}`;
     return safeJson(result.response.text());
   },
 
-  async extractResumeSkills(resumeText: string): Promise<{ skills: string[]; yearsExperience: number }> {
+  async extractResumeSkills(
+    resumeText: string,
+  ): Promise<{ skills: string[]; yearsExperience: number }> {
     const model = getModel();
     const prompt = `Extract skills and total years of experience from this resume.
 Return ONLY JSON: {"skills": string[], "yearsExperience": number}

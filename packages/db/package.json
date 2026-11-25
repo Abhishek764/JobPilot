@@ -2,12 +2,22 @@
   "name": "@jobpilot/db",
   "version": "0.0.0",
   "private": true,
-  "main": "./src/index.ts",
+  "main": "./dist/index.js",
   "types": "./src/index.ts",
+  "files": [
+    "dist",
+    "src",
+    "prisma"
+  ],
   "exports": {
-    ".": "./src/index.ts"
+    ".": {
+      "types": "./src/index.ts",
+      "source": "./src/index.ts",
+      "default": "./dist/index.js"
+    }
   },
   "scripts": {
+    "build": "tsc -p tsconfig.build.json",
     "generate": "prisma generate",
     "migrate": "prisma migrate dev",
     "migrate:deploy": "prisma migrate deploy",

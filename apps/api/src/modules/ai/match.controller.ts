@@ -1,11 +1,9 @@
+import type { CreateMatchAnalysisInput, ListMatchAnalysesQuery } from '@jobpilot/types/schemas';
 import type { Request, Response } from 'express';
-import type {
-  CreateMatchAnalysisInput,
-  ListMatchAnalysesQuery,
-} from '@jobpilot/types/schemas';
 
 import { asyncHandler } from '../../shared/async-handler';
 import { ForbiddenError, NotFoundError, UnauthorizedError } from '../../shared/errors';
+import { param } from '../../shared/params';
 import { userService } from '../users/user.service';
 
 import { matchRepository } from './match.repository';
@@ -47,7 +45,7 @@ export const matchController = {
 
   get: asyncHandler(async (req: Request, res: Response) => {
     const userId = await resolveUserId(req);
-    const analysis = await matchRepository.findById(req.params.id);
+    const analysis = await matchRepository.findById(param(req, 'id'));
     if (!analysis) throw new NotFoundError('MatchAnalysis');
     if (analysis.userId !== userId) throw new ForbiddenError();
     res.json({ success: true, data: analysis });
@@ -61,6 +59,8 @@ export const matchController = {
       pageSize: q.pageSize,
       track: q.track,
       status: q.status,
+      jobId: q.jobId,
+      resumeId: q.resumeId,
     });
     res.json({
       success: true,

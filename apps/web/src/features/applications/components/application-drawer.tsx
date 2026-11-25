@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { CoverLetterPanel } from '@/features/cover-letters/components/cover-letter-panel';
 
 import {
   useApplication,
@@ -40,7 +41,11 @@ const EVENT_LABELS: Record<ApplicationEventType, string> = {
 };
 
 const fmtDate = (value: string | Date): string =>
-  new Date(value).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+  new Date(value).toLocaleDateString(undefined, {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
 
 const fmtDateTime = (value: string | Date): string =>
   new Date(value).toLocaleString(undefined, {
@@ -57,7 +62,7 @@ interface Props {
 
 export const ApplicationDrawer = ({ id, onClose }: Props) => {
   const open = Boolean(id);
-  const { data: app } = useApplication(id);
+  const { data: app, isError, error } = useApplication(id);
   const events = useEvents(id ?? '', open);
   const notes = useNotes(id ?? '', open);
   const reminders = useReminders(id ?? '', open);
@@ -101,12 +106,12 @@ export const ApplicationDrawer = ({ id, onClose }: Props) => {
           <>
             <header className="space-y-2 pr-6">
               <DialogTitle className="text-xl">{app.title}</DialogTitle>
-              <p className="text-sm text-muted-foreground">{app.company}</p>
+              <p className="text-muted-foreground text-sm">{app.company}</p>
               <div className="flex flex-wrap items-center gap-2 pt-1">
                 <select
                   value={app.status}
                   onChange={(e) => setStatus.mutate(e.target.value)}
-                  className="h-8 rounded-md border border-input bg-background px-2 text-xs font-medium"
+                  className="border-input bg-background h-8 rounded-md border px-2 text-xs font-medium"
                 >
                   {DRAWER_STATUSES.map((s) => (
                     <option key={s} value={s}>
@@ -119,7 +124,7 @@ export const ApplicationDrawer = ({ id, onClose }: Props) => {
                     href={app.url}
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
+                    className="text-primary inline-flex items-center gap-1 text-xs hover:underline"
                   >
                     <ExternalLink className="h-3 w-3" /> Posting
                   </a>
@@ -151,6 +156,12 @@ export const ApplicationDrawer = ({ id, onClose }: Props) => {
               </dl>
             </header>
 
+            {/* Cover letter */}
+            <section className="space-y-2">
+              <h3 className="text-sm font-semibold">Cover letter</h3>
+              <CoverLetterPanel jobId={app.jobId} />
+            </section>
+
             {/* Reminders */}
             <section className="space-y-2">
               <h3 className="flex items-center gap-1.5 text-sm font-semibold">
@@ -169,7 +180,12 @@ export const ApplicationDrawer = ({ id, onClose }: Props) => {
                   onChange={(e) => setReminderDue(e.target.value)}
                   className="h-8 w-44"
                 />
-                <Button type="submit" size="sm" variant="outline" loading={createReminder.isPending}>
+                <Button
+                  type="submit"
+                  size="sm"
+                  variant="outline"
+                  loading={createReminder.isPending}
+                >
                   Add
                 </Button>
               </form>
@@ -181,7 +197,11 @@ export const ApplicationDrawer = ({ id, onClose }: Props) => {
                       key={r.id}
                       className="flex items-center justify-between rounded-md border px-2.5 py-1.5 text-xs"
                     >
-                      <div className={r.status === 'COMPLETED' ? 'text-muted-foreground line-through' : ''}>
+                      <div
+                        className={
+                          r.status === 'COMPLETED' ? 'text-muted-foreground line-through' : ''
+                        }
+                      >
                         <p className="font-medium">{r.title}</p>
                         <p className={overdue ? 'text-red-600' : 'text-muted-foreground'}>
                           {fmtDateTime(r.dueAt)}
@@ -191,7 +211,7 @@ export const ApplicationDrawer = ({ id, onClose }: Props) => {
                         {r.status === 'PENDING' ? (
                           <button
                             onClick={() => completeReminder.mutate(r.id)}
-                            className="rounded p-1 text-muted-foreground hover:text-emerald-600"
+                            className="text-muted-foreground rounded p-1 hover:text-emerald-600"
                             aria-label="Complete reminder"
                           >
                             <Check className="h-3.5 w-3.5" />
@@ -199,7 +219,7 @@ export const ApplicationDrawer = ({ id, onClose }: Props) => {
                         ) : null}
                         <button
                           onClick={() => deleteReminder.mutate(r.id)}
-                          className="rounded p-1 text-muted-foreground hover:text-red-600"
+                          className="text-muted-foreground rounded p-1 hover:text-red-600"
                           aria-label="Delete reminder"
                         >
                           <Trash2 className="h-3.5 w-3.5" />
@@ -209,7 +229,7 @@ export const ApplicationDrawer = ({ id, onClose }: Props) => {
                   );
                 })}
                 {reminders.data?.length === 0 ? (
-                  <li className="text-xs text-muted-foreground">No reminders.</li>
+                  <li className="text-muted-foreground text-xs">No reminders.</li>
                 ) : null}
               </ul>
             </section>
@@ -237,17 +257,19 @@ export const ApplicationDrawer = ({ id, onClose }: Props) => {
                       <p className="whitespace-pre-wrap">{n.body}</p>
                       <button
                         onClick={() => deleteNote.mutate(n.id)}
-                        className="shrink-0 rounded p-1 text-muted-foreground hover:text-red-600"
+                        className="text-muted-foreground shrink-0 rounded p-1 hover:text-red-600"
                         aria-label="Delete note"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
                       </button>
                     </div>
-                    <p className="mt-1 text-[11px] text-muted-foreground">{fmtDateTime(n.createdAt)}</p>
+                    <p className="text-muted-foreground mt-1 text-[11px]">
+                      {fmtDateTime(n.createdAt)}
+                    </p>
                   </li>
                 ))}
                 {notes.data?.length === 0 ? (
-                  <li className="text-xs text-muted-foreground">No notes yet.</li>
+                  <li className="text-muted-foreground text-xs">No notes yet.</li>
                 ) : null}
               </ul>
             </section>
@@ -263,7 +285,7 @@ export const ApplicationDrawer = ({ id, onClose }: Props) => {
                   </li>
                 ))}
                 {events.data?.items.length === 0 ? (
-                  <li className="text-xs text-muted-foreground">No activity.</li>
+                  <li className="text-muted-foreground text-xs">No activity.</li>
                 ) : null}
               </ul>
             </section>
@@ -279,8 +301,16 @@ export const ApplicationDrawer = ({ id, onClose }: Props) => {
               </Button>
             </footer>
           </>
+        ) : isError ? (
+          <div role="alert" className="space-y-3">
+            <DialogTitle className="text-base">Couldn’t open this application</DialogTitle>
+            <p className="text-muted-foreground text-sm">{error.message}</p>
+            <Button size="sm" variant="outline" onClick={onClose}>
+              Close
+            </Button>
+          </div>
         ) : (
-          <DialogTitle className="text-sm text-muted-foreground">Loading…</DialogTitle>
+          <DialogTitle className="text-muted-foreground text-sm">Loading…</DialogTitle>
         )}
       </DialogContent>
     </Dialog>

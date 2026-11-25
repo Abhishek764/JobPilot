@@ -6,8 +6,8 @@
     "dev": "next dev --turbo -p 3000",
     "build": "next build",
     "start": "next start -p 3000",
-    "lint": "next lint --max-warnings 0",
-    "lint:fix": "next lint --fix",
+    "lint": "eslint . --max-warnings 0",
+    "lint:fix": "eslint . --fix",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf .next .turbo"
   },

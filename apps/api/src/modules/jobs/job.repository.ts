@@ -1,4 +1,5 @@
-import { Prisma, prisma, type Job } from '@jobpilot/db';
+import type { Prisma } from '@jobpilot/db';
+import { prisma, type Job } from '@jobpilot/db';
 import type { NormalizedJob, Schemas } from '@jobpilot/types';
 
 import { canonicalizeUrl, contentHash } from '../scraper/core/dedup';
@@ -56,6 +57,7 @@ export const jobRepository = {
   },
 
   async list(query: Schemas.ListJobsQuery): Promise<{ items: Job[]; total: number }> {
+    const q = query.q?.trim();
     const where: Prisma.JobWhereInput = {
       isActive: true,
       ...(query.platform && { sourcePlatform: query.platform }),
@@ -63,14 +65,16 @@ export const jobRepository = {
       ...(query.location && { location: { contains: query.location, mode: 'insensitive' } }),
       ...(query.remote !== undefined && { remote: query.remote }),
       ...(query.roleCategory && { roleCategory: query.roleCategory }),
-      ...(query.skills?.length && { skills: { hasSome: query.skills.map((s: string) => s.toLowerCase()) } }),
+      ...(query.skills?.length && {
+        skills: { hasSome: query.skills.map((s: string) => s.toLowerCase()) },
+      }),
       ...(query.salaryMin && { salaryMin: { gte: query.salaryMin } }),
       ...(query.postedAfter && { postedAt: { gte: query.postedAfter } }),
-      ...(query.q && {
+      ...(q && {
         OR: [
-          { title: { contains: query.q, mode: 'insensitive' } },
-          { company: { contains: query.q, mode: 'insensitive' } },
-          { description: { contains: query.q, mode: 'insensitive' } },
+          { title: { contains: q, mode: 'insensitive' } },
+          { company: { contains: q, mode: 'insensitive' } },
+          { description: { contains: q, mode: 'insensitive' } },
         ],
       }),
     };
@@ -78,7 +82,13 @@ export const jobRepository = {
     const [items, total] = await Promise.all([
       prisma.job.findMany({
         where,
-        orderBy: { [query.sortBy]: query.sortDir },
+        // Undated postings sort after dated ones; id keeps pagination stable.
+        orderBy: [
+          query.sortBy === 'postedAt'
+            ? { postedAt: { sort: query.sortDir, nulls: 'last' } }
+            : { scrapedAt: query.sortDir },
+          { id: 'desc' },
+        ],
         skip: (query.page - 1) * query.pageSize,
         take: query.pageSize,
       }),
@@ -91,7 +101,11 @@ export const jobRepository = {
   async markStaleInactive(platform: string, olderThanDays = 30): Promise<number> {
     const cutoff = new Date(Date.now() - olderThanDays * 86_400_000);
     const res = await prisma.job.updateMany({
-      where: { sourcePlatform: platform as Prisma.JobWhereInput['sourcePlatform'], lastSeenAt: { lt: cutoff }, isActive: true },
+      where: {
+        sourcePlatform: platform as Prisma.JobWhereInput['sourcePlatform'],
+        lastSeenAt: { lt: cutoff },
+        isActive: true,
+      },
       data: { isActive: false },
     });
     return res.count;

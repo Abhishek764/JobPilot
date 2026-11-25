@@ -3,8 +3,13 @@ import type { Worker } from 'bullmq';
 import { env } from '../../config/env';
 import { logger } from '../../config/logger';
 
+import { createCoverLetterWorker } from './workers/cover-letter.worker';
+import { createFeedSyncWorker } from './workers/feed-sync.worker';
 import { createMatchAnalysisWorker } from './workers/match-analysis.worker';
 import { createNormalizeWorker } from './workers/normalize.worker';
+import { createResumeAnalysisWorker } from './workers/resume-analysis.worker';
+import { createResumeParseWorker } from './workers/resume-parse.worker';
+import { createResumeVersionWorker } from './workers/resume-version.worker';
 import { createSchedulerWorker } from './workers/scheduler.worker';
 import { createScrapeDetailWorker } from './workers/scrape-detail.worker';
 import { createScrapeListingWorker } from './workers/scrape-listing.worker';
@@ -18,7 +23,12 @@ export const startAllWorkers = (): Worker[] => {
     createScrapeDetailWorker(),
     createNormalizeWorker(),
     createMatchAnalysisWorker(),
+    createResumeParseWorker(),
+    createCoverLetterWorker(),
+    createResumeAnalysisWorker(),
+    createResumeVersionWorker(),
   ];
+  if (env.FEEDS_ENABLED) workers.push(createFeedSyncWorker());
   if (env.SCRAPER_SCHEDULER_ENABLED) {
     workers.push(createSchedulerWorker());
     logger.info('scheduler worker enabled');

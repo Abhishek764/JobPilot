@@ -7,11 +7,7 @@ import {
 } from '@jobpilot/db';
 import type { Board, PaginatedResult } from '@jobpilot/types';
 import { BOARD_COLUMNS } from '@jobpilot/types';
-import type {
-  BoardQuery,
-  ListApplicationsQuery,
-  ListEventsQuery,
-} from '@jobpilot/types/schemas';
+import type { BoardQuery, ListApplicationsQuery, ListEventsQuery } from '@jobpilot/types/schemas';
 
 const searchFilter = (search?: string): Prisma.ApplicationWhereInput =>
   search
@@ -90,7 +86,7 @@ export const applicationRepository = {
 
   create: (
     userId: string,
-    data: Prisma.ApplicationUncheckedCreateInput,
+    data: Omit<Prisma.ApplicationUncheckedCreateInput, 'userId'>,
   ): Promise<Application & { events: ApplicationEvent[] }> =>
     prisma.application.create({
       data: {
@@ -105,8 +101,7 @@ export const applicationRepository = {
     userId: string,
     id: string,
     data: Prisma.ApplicationUncheckedUpdateInput,
-  ): Promise<Prisma.BatchPayload> =>
-    prisma.application.updateMany({ where: { id, userId }, data }),
+  ): Promise<Prisma.BatchPayload> => prisma.application.updateMany({ where: { id, userId }, data }),
 
   /**
    * Move a card to a status/position and log the change atomically. Returns the
@@ -143,6 +138,44 @@ export const applicationRepository = {
 
   delete: (userId: string, id: string): Promise<Prisma.BatchPayload> =>
     prisma.application.deleteMany({ where: { id, userId } }),
+
+  /** Raw aggregates for the insights panel; every query is scoped by userId. */
+  insights: async (userId: string, now: Date) => {
+    const horizon = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+    const [groups, upcomingReminders, events] = await Promise.all([
+      prisma.application.groupBy({ by: ['status'], where: { userId }, _count: { _all: true } }),
+      prisma.reminder.count({
+        where: { application: { userId }, status: 'PENDING', dueAt: { lte: horizon } },
+      }),
+      prisma.applicationEvent.findMany({
+        where: { application: { userId } },
+        orderBy: { createdAt: 'desc' },
+        take: 8,
+        select: {
+          id: true,
+          type: true,
+          createdAt: true,
+          applicationId: true,
+          application: { select: { company: true, title: true } },
+        },
+      }),
+    ]);
+    return {
+      byStatus: groups.map((g) => ({ status: g.status, count: g._count._all })),
+      upcomingReminders,
+      recentActivity: events.map((e) => ({
+        id: e.id,
+        type: e.type,
+        createdAt: e.createdAt,
+        applicationId: e.applicationId,
+        company: e.application.company,
+        title: e.application.title,
+      })),
+    };
+  },
+
+  jobExists: async (jobId: string): Promise<boolean> =>
+    (await prisma.job.count({ where: { id: jobId } })) > 0,
 
   recordEvent: (
     applicationId: string,

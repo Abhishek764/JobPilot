@@ -1,5 +1,6 @@
-import { verifyToken } from '@clerk/backend';
 import type { Server as HttpServer } from 'node:http';
+
+import { verifyToken } from '@clerk/backend';
 import type { RealtimeEvent } from '@jobpilot/types';
 import { Server, type Socket } from 'socket.io';
 

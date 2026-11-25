@@ -2,12 +2,13 @@ import { prisma } from '@jobpilot/db';
 import type { MatchAnalysis, MatchTrack } from '@jobpilot/db';
 
 import { logger } from '../../config/logger';
+import { assertAiQuota } from '../../shared/ai-quota';
 import { BadRequestError, NotFoundError } from '../../shared/errors';
 import { enqueueMatchAnalysis } from '../queue/queues';
 
+import type { Track } from './ai.prompts';
 import { aiService } from './ai.service';
 import { matchRepository } from './match.repository';
-import type { Track } from './ai.prompts';
 
 export interface CreateMatchRequest {
   userId: string;
@@ -21,13 +22,17 @@ const ensureJobDescription = async (
   jobId: string | undefined,
   jobDescription: string | undefined,
 ): Promise<{ jobId: string | null; jobDescription: string }> => {
-  if (jobDescription && jobDescription.trim().length >= 50) {
-    return { jobId: jobId ?? null, jobDescription };
-  }
+  // A saved job is analysed against its own listing text (the worker re-reads it too),
+  // so reuse keys on the text that is actually analysed. Pasted text is a fallback.
   if (jobId) {
     const job = await prisma.job.findUnique({ where: { id: jobId } });
-    if (!job?.description) throw new NotFoundError('Job description');
-    return { jobId, jobDescription: job.description };
+    if (!job) throw new NotFoundError('Job');
+    const text = job.description?.trim() || jobDescription?.trim();
+    if (!text) throw new BadRequestError('This job has no description; paste one to analyse');
+    return { jobId, jobDescription: text };
+  }
+  if (jobDescription && jobDescription.trim().length >= 50) {
+    return { jobId: null, jobDescription };
   }
   throw new BadRequestError('jobDescription or jobId required');
 };
@@ -38,8 +43,24 @@ export const matchService = {
       where: { id: req.resumeId, userId: req.userId },
     });
     if (!resume) throw new NotFoundError('Resume');
+    if (!resume.content.trim()) {
+      throw new BadRequestError('Resume has no extracted text yet — wait for parsing to finish');
+    }
 
+    await assertAiQuota('matchAnalysis', req.userId);
     const resolved = await ensureJobDescription(req.jobId, req.jobDescription);
+
+    // Reuse a finished result only when it was computed from today's inputs:
+    // the same job text and a resume that hasn't changed since.
+    const reusable = await matchRepository.findReusable({
+      userId: req.userId,
+      resumeId: req.resumeId,
+      jobId: resolved.jobId,
+      track: req.track,
+      jobDescription: resolved.jobDescription,
+      notBefore: resume.updatedAt,
+    });
+    if (reusable) return reusable;
 
     const analysis = await matchRepository.create({
       userId: req.userId,
@@ -49,11 +70,18 @@ export const matchService = {
       jobDescription: resolved.jobDescription,
     });
 
-    await enqueueMatchAnalysis({
-      analysisId: analysis.id,
-      userId: req.userId,
-      track: req.track,
-    });
+    try {
+      await enqueueMatchAnalysis({
+        analysisId: analysis.id,
+        userId: req.userId,
+        track: req.track,
+      });
+    } catch (err) {
+      // Never leave a row QUEUED with no job behind it.
+      const message = err instanceof Error ? err.message : String(err);
+      await matchRepository.setFailed(analysis.id, `Could not queue analysis: ${message}`);
+      throw err;
+    }
 
     return matchRepository.setQueued(analysis.id, analysis.id);
   },
@@ -62,7 +90,11 @@ export const matchService = {
    * Executed by the queue worker. Loads inputs from DB, calls AI service, persists result.
    * Idempotent on retry: a COMPLETED record short-circuits.
    */
-  async processAnalysis(analysisId: string): Promise<MatchAnalysis> {
+  async processAnalysis(
+    analysisId: string,
+    opts: { finalAttempt?: boolean } = {},
+  ): Promise<MatchAnalysis> {
+    const finalAttempt = opts.finalAttempt ?? true;
     const analysis = await matchRepository.findById(analysisId);
     if (!analysis) throw new NotFoundError('MatchAnalysis');
     if (analysis.status === 'COMPLETED') return analysis;
@@ -72,10 +104,7 @@ export const matchService = {
       return matchRepository.setFailed(analysisId, 'Resume no longer exists');
     }
     const user = await prisma.user.findUnique({ where: { id: analysis.userId } });
-    const userSkills = [
-      ...(user?.skills ?? []),
-      ...(resume.parsedSkills ?? []),
-    ];
+    const userSkills = [...(user?.skills ?? []), ...(resume.parsedSkills ?? [])];
 
     let jobDescription = analysis.jobDescription ?? '';
     let jobSkillsHint: string[] = [];
@@ -120,8 +149,10 @@ export const matchService = {
       });
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      logger.error({ err: message, analysisId }, 'match analysis failed');
-      await matchRepository.setFailed(analysisId, message);
+      logger.error({ err: message, analysisId, finalAttempt }, 'match analysis failed');
+      // Between queue retries keep the row pending so the UI doesn't offer a duplicate run.
+      if (finalAttempt) await matchRepository.setFailed(analysisId, message);
+      else await matchRepository.setRetrying(analysisId, message);
       throw err;
     }
   },

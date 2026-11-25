@@ -4,6 +4,7 @@ import { Router, type Request, type Response } from 'express';
 import { requireAuth } from '../../middleware/auth';
 import { validate } from '../../middleware/validate';
 import { asyncHandler } from '../../shared/async-handler';
+import { param } from '../../shared/params';
 
 import { jobService } from './job.service';
 
@@ -19,12 +20,12 @@ jobRouter.get(
     const { items, total } = await jobService.list(query);
     res.json({
       success: true,
-      data: items,
-      meta: {
+      data: {
+        items,
         page: query.page,
         pageSize: query.pageSize,
         total,
-        totalPages: Math.ceil(total / query.pageSize),
+        totalPages: Math.max(1, Math.ceil(total / query.pageSize)),
       },
     });
   }),
@@ -33,7 +34,7 @@ jobRouter.get(
 jobRouter.get(
   '/:id',
   asyncHandler(async (req: Request, res: Response) => {
-    const job = await jobService.getById(req.params.id!);
+    const job = await jobService.getById(param(req, 'id'));
     res.json({ success: true, data: job });
   }),
 );

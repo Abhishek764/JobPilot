@@ -4,7 +4,21 @@ export type ProcessingStatus = (typeof PROCESSING_STATUSES)[number];
 export const RESUME_FILE_STATUSES = ['PENDING', 'UPLOADED', 'PARSING', 'PARSED', 'FAILED'] as const;
 export type ResumeFileStatus = (typeof RESUME_FILE_STATUSES)[number];
 
-export const COVER_LETTER_TONES = ['PROFESSIONAL', 'ENTHUSIASTIC', 'CONCISE', 'STORYTELLING'] as const;
+/** Accepted resume uploads: MIME type → file extension. */
+export const RESUME_FILE_TYPES = {
+  'application/pdf': 'pdf',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'docx',
+  'text/plain': 'txt',
+} as const;
+export type ResumeMimeType = keyof typeof RESUME_FILE_TYPES;
+export const RESUME_MIME_TYPES = Object.keys(RESUME_FILE_TYPES) as ResumeMimeType[];
+
+export const COVER_LETTER_TONES = [
+  'PROFESSIONAL',
+  'ENTHUSIASTIC',
+  'CONCISE',
+  'STORYTELLING',
+] as const;
 export type CoverLetterTone = (typeof COVER_LETTER_TONES)[number];
 
 export interface Resume {

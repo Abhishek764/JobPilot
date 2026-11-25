@@ -4,8 +4,8 @@ import { env } from '../../../config/env';
 import { logger } from '../../../config/logger';
 import { redis } from '../../../config/redis';
 import { acquireScraperContext } from '../../scraper/browser';
-import { scraperRegistry } from '../../scraper/core/registry';
 import { reserveUrl } from '../../scraper/core/dedup';
+import { scraperRegistry } from '../../scraper/core/registry';
 import { scrapeRunRepository } from '../../scraper/scrape-run.repository';
 import { registerScrapers } from '../../scraper/sources';
 import { enqueueDetail, enqueueListing, type ScrapeListingJob } from '../queues';
@@ -66,7 +66,10 @@ export const createScrapeListingWorker = (): Worker<ScrapeListingJob> => {
   );
 
   worker.on('failed', (job, err) => {
-    logger.error({ id: job?.id, err: err.message, attempts: job?.attemptsMade }, 'listing job failed');
+    logger.error(
+      { id: job?.id, err: err.message, attempts: job?.attemptsMade },
+      'listing job failed',
+    );
   });
   return worker;
 };

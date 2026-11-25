@@ -1,0 +1,68 @@
+import type { ExperienceLevel } from '@jobpilot/types';
+import { redirect } from 'next/navigation';
+
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { apiServer, ApiServerError } from '@/lib/api-server';
+
+import { SettingsForm } from './settings-form';
+
+export const dynamic = 'force-dynamic';
+
+interface MeResponse {
+  id: string;
+  name: string | null;
+  bio: string | null;
+  location: string | null;
+  experienceLevel: ExperienceLevel | null;
+  skills: string[];
+  preferredRoles: string[];
+  resumeUrl: string | null;
+  githubUrl: string | null;
+  linkedinUrl: string | null;
+  onboardedAt: string | null;
+}
+
+export default async function SettingsPage() {
+  let me: MeResponse;
+  try {
+    me = await apiServer<MeResponse>('/users/me');
+  } catch (err) {
+    if (err instanceof ApiServerError && err.status === 404) redirect('/onboarding');
+    throw err;
+  }
+
+  if (!me.onboardedAt) redirect('/onboarding');
+
+  return (
+    <div className="max-w-3xl space-y-6">
+      <header>
+        <h1 className="text-3xl font-semibold tracking-tight">Settings</h1>
+        <p className="text-muted-foreground text-sm">Manage your profile + preferences.</p>
+      </header>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Profile</CardTitle>
+          <CardDescription>
+            Updates apply immediately to AI matching + recommendations.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <SettingsForm
+            defaults={{
+              name: me.name ?? '',
+              bio: me.bio ?? '',
+              location: me.location ?? '',
+              experienceLevel: me.experienceLevel ?? 'MID',
+              skills: me.skills,
+              preferredRoles: me.preferredRoles,
+              resumeUrl: me.resumeUrl,
+              githubUrl: me.githubUrl,
+              linkedinUrl: me.linkedinUrl,
+            }}
+          />
+        </CardContent>
+      </Card>
+    </div>
+  );
+}

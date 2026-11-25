@@ -1,8 +1,8 @@
 import { z } from 'zod';
 
 import { APPLICATION_STATUSES, REMINDER_STATUSES } from '../domain/application';
-import { COVER_LETTER_TONES } from '../domain/resume';
 import { SALARY_PERIODS, SOURCE_PLATFORMS } from '../domain/job';
+import { COVER_LETTER_TONES, RESUME_MIME_TYPES, type ResumeMimeType } from '../domain/resume';
 import { EXPERIENCE_LEVELS, ROLES } from '../domain/user';
 
 const httpsUrl = z
@@ -240,6 +240,8 @@ export const CreateMatchAnalysisSchema = z
 export const ListMatchAnalysesQuerySchema = PaginationSchema.extend({
   track: MatchTrackSchema.optional(),
   status: MatchStatusSchema.optional(),
+  jobId: z.string().cuid().optional(),
+  resumeId: z.string().cuid().optional(),
 });
 
 export type MatchTrackInput = z.infer<typeof MatchTrackSchema>;
@@ -253,12 +255,16 @@ export const CreateResumeSchema = z.object({
   fileUrl: z.string().url().optional().nullable(),
 });
 
-/** Request a presigned upload for a PDF resume. */
+/** Request a presigned upload for a PDF, DOCX or TXT resume. */
 export const UploadResumeSchema = z.object({
   title: z.string().trim().min(1).max(200),
   filename: z.string().trim().min(1).max(255),
-  contentType: z.literal('application/pdf'),
-  sizeBytes: z.number().int().positive().max(15 * 1024 * 1024),
+  contentType: z.enum(RESUME_MIME_TYPES as [ResumeMimeType, ...ResumeMimeType[]]),
+  sizeBytes: z
+    .number()
+    .int()
+    .positive()
+    .max(15 * 1024 * 1024),
 });
 
 export const ListResumesQuerySchema = PaginationSchema;

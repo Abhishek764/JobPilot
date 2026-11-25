@@ -2,23 +2,45 @@
   "name": "@jobpilot/types",
   "version": "0.0.0",
   "private": true,
-  "main": "./src/index.ts",
+  "main": "./dist/index.js",
   "types": "./src/index.ts",
+  "files": [
+    "dist",
+    "src"
+  ],
   "exports": {
-    ".": "./src/index.ts",
-    "./schemas": "./src/schemas/index.ts"
+    ".": {
+      "types": "./src/index.ts",
+      "source": "./src/index.ts",
+      "default": "./dist/index.js"
+    },
+    "./schemas": {
+      "types": "./src/schemas/index.ts",
+      "source": "./src/schemas/index.ts",
+      "default": "./dist/schemas/index.js"
+    }
+  },
+  "typesVersions": {
+    "*": {
+      "schemas": [
+        "./src/schemas/index.ts"
+      ]
+    }
   },
   "scripts": {
+    "build": "tsc -p tsconfig.build.json",
     "lint": "eslint . --max-warnings 0",
     "lint:fix": "eslint . --fix",
     "typecheck": "tsc --noEmit",
-    "clean": "rm -rf dist .turbo"
+    "clean": "rm -rf dist .turbo",
+    "test": "vitest run"
   },
   "dependencies": {
     "zod": "^3.23.8"
   },
   "devDependencies": {
     "@jobpilot/config": "workspace:*",
-    "typescript": "^5.6.3"
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.3"
   }
 }
