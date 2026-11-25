@@ -79,7 +79,7 @@ const EnvSchema = z.object({
     .string()
     .default('true')
     .transform((s) => s !== 'false'),
-  FEED_SYNC_INTERVAL_HOURS: z.coerce.number().positive().default(6),
+  FEED_SYNC_CRON: z.string().default('17 * * * *'),
   RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(60_000),
   RATE_LIMIT_MAX: z.coerce.number().int().positive().default(100),
   SENTRY_DSN: z.string().optional(),

@@ -62,6 +62,7 @@ enum SourcePlatform {
   NAUKRI
   REMOTIVE
   ARBEITNOW
+  JOBICY
   CUSTOM
 }
 

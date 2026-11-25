@@ -2,7 +2,7 @@ import { ListJobsQuerySchema } from '@jobpilot/types/schemas';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const prisma = vi.hoisted(() => ({
-  job: { findMany: vi.fn(), count: vi.fn() },
+  job: { findMany: vi.fn(), count: vi.fn(), updateMany: vi.fn() },
 }));
 
 vi.mock('@jobpilot/db', () => ({ prisma, Prisma: {} }));
@@ -58,5 +58,42 @@ describe('jobRepository.list', () => {
   it('sorts newest posted first with undated jobs last and a stable tiebreak', async () => {
     const { orderBy } = await run({});
     expect(orderBy).toEqual([{ postedAt: { sort: 'desc', nulls: 'last' } }, { id: 'desc' }]);
+  });
+});
+
+describe('jobRepository.screenStoredJobs', () => {
+  beforeEach(() => vi.resetAllMocks());
+
+  it('deactivates stored jobs that are not fresher roles, keeping source-labelled entry jobs', async () => {
+    prisma.job.findMany.mockResolvedValue([
+      { id: 'a', title: 'Senior Recruiter', description: null, tags: [] },
+      { id: 'b', title: 'Junior Developer', description: null, tags: [] },
+      { id: 'c', title: 'Data Analyst', description: null, tags: ['entry-level'] },
+      {
+        id: 'd',
+        title: 'Data Analyst',
+        description: 'Needs 4+ years of experience',
+        tags: ['entry-level'],
+      },
+    ]);
+    prisma.job.updateMany.mockResolvedValue({ count: 2 });
+
+    await expect(jobRepository.screenStoredJobs()).resolves.toBe(2);
+
+    expect(prisma.job.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { isActive: true } }),
+    );
+    expect(prisma.job.updateMany).toHaveBeenCalledWith({
+      where: { id: { in: ['a', 'd'] } },
+      data: { isActive: false },
+    });
+  });
+
+  it('does nothing when every stored job qualifies', async () => {
+    prisma.job.findMany.mockResolvedValue([
+      { id: 'b', title: 'Graduate Engineer', description: null, tags: [] },
+    ]);
+    await expect(jobRepository.screenStoredJobs()).resolves.toBe(0);
+    expect(prisma.job.updateMany).not.toHaveBeenCalled();
   });
 });

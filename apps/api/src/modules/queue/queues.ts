@@ -173,20 +173,28 @@ export const feedSyncQueue = new Queue('feed-sync', {
   },
 });
 
-/** Repeat the feed sync on an interval (idempotent: one repeatable per queue). */
-export const scheduleFeedSync = () =>
-  feedSyncQueue.add(
+/**
+ * Run the feed sync on FEED_SYNC_CRON (default hourly at :17 — Jobicy asks clients to avoid
+ * minute :00). Older schedules with a different pattern or interval are removed first so a
+ * config change never leaves two schedules running. Per-feed limits live in syncFeeds.
+ */
+export const scheduleFeedSync = async () => {
+  for (const r of await feedSyncQueue.getRepeatableJobs()) {
+    if (r.pattern !== env.FEED_SYNC_CRON) await feedSyncQueue.removeRepeatableByKey(r.key);
+  }
+  return feedSyncQueue.add(
     'sync',
     {},
-    { repeat: { every: env.FEED_SYNC_INTERVAL_HOURS * 3_600_000 }, jobId: 'feed-sync-repeat' },
+    { repeat: { pattern: env.FEED_SYNC_CRON }, jobId: 'feed-sync-repeat' },
   );
+};
 
 /**
- * Sync at startup at most once per interval: free hosts sleep and wake often, and the
- * feeds ask for a handful of calls per day. The jobId dedupes wakes inside one bucket.
+ * Sync at startup at most once per hour: free hosts sleep and wake often. The jobId
+ * dedupes wakes inside the same hour.
  */
 export const enqueueFeedSyncNow = (now: number = Date.now()) => {
-  const bucket = Math.floor(now / (env.FEED_SYNC_INTERVAL_HOURS * 3_600_000));
+  const bucket = Math.floor(now / 3_600_000);
   return feedSyncQueue.add('sync-now', {}, { jobId: `feed-sync-now-${bucket}` });
 };
 

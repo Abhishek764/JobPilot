@@ -4,13 +4,20 @@ import type { NormalizedJob, Schemas } from '@jobpilot/types';
 
 import { canonicalizeUrl, contentHash } from '../scraper/core/dedup';
 
+import { isFresherJob } from './fresher';
+
+/** Tag marking a job its source labelled entry-level, so re-screening keeps it. */
+export const ENTRY_LEVEL_TAG = 'entry-level';
+
 export interface UpsertResult {
   job: Job;
   created: boolean;
 }
 
 export const jobRepository = {
-  async upsertNormalized(input: NormalizedJob): Promise<UpsertResult> {
+  async upsertNormalized(
+    input: NormalizedJob & { sourceIsEntryLevel?: boolean },
+  ): Promise<UpsertResult> {
     const url = canonicalizeUrl(input.url);
     const hash = contentHash({ ...input, url });
 
@@ -33,7 +40,7 @@ export const jobRepository = {
       description: input.description,
       roleCategory: input.roleCategory,
       skills: input.skills,
-      tags: [],
+      tags: input.sourceIsEntryLevel ? [ENTRY_LEVEL_TAG] : [],
       salaryMin: input.salaryMin,
       salaryMax: input.salaryMax,
       currency: input.currency,
@@ -96,6 +103,26 @@ export const jobRepository = {
     ]);
 
     return { items, total };
+  },
+
+  /**
+   * Deactivate active jobs that are not fresher roles (e.g. senior postings stored before
+   * the filter, or from scrapers). Rows are kept, just hidden. Returns how many changed.
+   */
+  async screenStoredJobs(): Promise<number> {
+    const active = await prisma.job.findMany({
+      where: { isActive: true },
+      select: { id: true, title: true, description: true, tags: true },
+    });
+    const ids = active
+      .filter((j) => !isFresherJob(j, { sourceIsEntryLevel: j.tags.includes(ENTRY_LEVEL_TAG) }))
+      .map((j) => j.id);
+    if (ids.length === 0) return 0;
+    const res = await prisma.job.updateMany({
+      where: { id: { in: ids } },
+      data: { isActive: false },
+    });
+    return res.count;
   },
 
   async markStaleInactive(platform: string, olderThanDays = 30): Promise<number> {

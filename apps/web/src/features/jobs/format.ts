@@ -7,6 +7,7 @@ const PLATFORM_LABELS: Record<string, string> = {
   NAUKRI: 'Naukri',
   REMOTIVE: 'Remotive',
   ARBEITNOW: 'Arbeitnow',
+  JOBICY: 'Jobicy',
   CUSTOM: 'Direct',
 };
 

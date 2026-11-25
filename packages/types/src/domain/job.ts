@@ -5,6 +5,7 @@ export const SOURCE_PLATFORMS = [
   'NAUKRI',
   'REMOTIVE',
   'ARBEITNOW',
+  'JOBICY',
   'CUSTOM',
 ] as const;
 export type SourcePlatform = (typeof SOURCE_PLATFORMS)[number];

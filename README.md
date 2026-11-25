@@ -149,10 +149,16 @@ presigned URLs (`RESUME_URL_TTL_SECONDS`).
 
 ### Job sources
 
-Out of the box, jobs come from the public [Remotive](https://remotive.com) and
-[Arbeitnow](https://www.arbeitnow.com) job-board APIs: synced at startup and every
-`FEED_SYNC_INTERVAL_HOURS` (default 6), with each listing linking back to its source. Admins can
-force a sync with `POST /api/v1/scrape/feeds/sync`. Set `FEEDS_ENABLED=false` to turn this off.
+JobPilot lists **fresher roles only**: internships and jobs asking for at most 1.5 years of
+experience (`apps/api/src/modules/jobs/fresher.ts`). A job is kept when its title, stated
+experience or source marks it entry-level; senior titles and higher experience requirements are
+dropped, and ambiguous postings are left out. Stored jobs are re-screened on every sync.
+
+Jobs come from the public [Remotive](https://remotive.com), [Arbeitnow](https://www.arbeitnow.com)
+and [Jobicy](https://jobicy.com) APIs, credited and linked back as each provider requires. The sync
+runs on `FEED_SYNC_CRON` (default hourly at :17) and at startup; Remotive is called at most every
+6 hours, as its terms ask. Admins can force a sync with `POST /api/v1/scrape/feeds/sync`. Set
+`FEEDS_ENABLED=false` to turn this off.
 
 Playwright scrapers for LinkedIn, Wellfound, Indeed and Naukri run in the worker. Configure what to scrape via
 the admin endpoints (`ADMIN` role) — `POST /api/v1/scrape/sources` to upsert a source and
