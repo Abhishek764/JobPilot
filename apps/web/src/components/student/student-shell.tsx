@@ -67,7 +67,7 @@ export const StudentShell = ({
           >
             <span
               aria-hidden
-              className="bg-primary grid h-8 w-8 place-items-center rounded-full text-xs font-bold text-white shadow-[inset_0_1px_0_hsl(0_0%_100%/0.3)]"
+              className="bg-primary text-primary-foreground grid h-8 w-8 place-items-center rounded-full text-xs font-bold shadow-[inset_0_1px_0_hsl(0_0%_100%/0.3)]"
             >
               JP
             </span>

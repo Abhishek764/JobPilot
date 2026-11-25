@@ -14,10 +14,10 @@ const LABEL: Record<ResumeFileStatus, string> = {
 
 const TONE: Record<ResumeFileStatus, string> = {
   PENDING: 'bg-muted text-muted-foreground',
-  UPLOADED: 'bg-sky-500/15 text-sky-300',
-  PARSING: 'bg-sky-500/15 text-sky-300',
-  PARSED: 'bg-emerald-500/15 text-emerald-300',
-  FAILED: 'bg-rose-500/15 text-rose-300',
+  UPLOADED: 'bg-sky-400/10 text-sky-200/90',
+  PARSING: 'bg-sky-400/10 text-sky-200/90',
+  PARSED: 'bg-emerald-400/10 text-emerald-200/90',
+  FAILED: 'bg-rose-400/10 text-rose-200/90',
 };
 
 export const ResumeStatusBadge = ({ status }: { status: ResumeFileStatus }) => (

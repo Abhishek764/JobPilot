@@ -11,14 +11,14 @@ export const positionBetween = (prev?: number, next?: number): number => {
   return (prev + next) / 2;
 };
 
-/** Status dot colours (Apple system palette). */
+/** Status dot colours: muted, low-saturation tones that stay distinguishable. */
 export const COLUMN_ACCENT: Record<BoardColumnStatus, string> = {
-  SAVED: 'bg-zinc-400',
-  APPLIED: 'bg-[#0A84FF]',
-  OA: 'bg-[#FFD60A]',
-  INTERVIEW: 'bg-[#64D2FF]',
-  OFFER: 'bg-[#30D158]',
-  REJECTED: 'bg-[#FF453A]',
+  SAVED: 'bg-slate-400',
+  APPLIED: 'bg-[#7FA6D4]',
+  OA: 'bg-[#CDB37A]',
+  INTERVIEW: 'bg-[#86B8C7]',
+  OFFER: 'bg-[#8CBF9C]',
+  REJECTED: 'bg-[#CF8C8C]',
 };
 
 export const columnDroppableId = (status: string): string => `col:${status}`;
