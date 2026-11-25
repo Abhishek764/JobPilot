@@ -6,6 +6,7 @@ const prisma = vi.hoisted(() => ({
   resume: { findFirst: vi.fn(), findUnique: vi.fn() },
   job: { findUnique: vi.fn() },
   resumeVersion: { create: vi.fn(), update: vi.fn(), findUnique: vi.fn() },
+  resumeAnalysis: { findFirst: vi.fn() },
 }));
 const queue = vi.hoisted(() => ({ enqueueResumeVersion: vi.fn() }));
 const ai = vi.hoisted(() => ({ tailorResume: vi.fn() }));
@@ -70,6 +71,18 @@ describe('versionService.create', () => {
       },
     });
     expect(queue.enqueueResumeVersion).toHaveBeenCalledWith({ versionId: 'v_1' });
+  });
+
+  it('only links an analysis that belongs to this user and resume', async () => {
+    prisma.resumeAnalysis.findFirst.mockResolvedValue(null);
+    await expect(
+      versionService.create('c', 'resume_1', { jobId: 'job_1', analysisId: 'an_other' }),
+    ).rejects.toBeInstanceOf(NotFoundError);
+    expect(prisma.resumeAnalysis.findFirst).toHaveBeenCalledWith({
+      where: { id: 'an_other', userId: 'user_1', resumeId: 'resume_1' },
+      select: { id: true },
+    });
+    expect(prisma.resumeVersion.create).not.toHaveBeenCalled();
   });
 
   it('404s for an unknown job', async () => {

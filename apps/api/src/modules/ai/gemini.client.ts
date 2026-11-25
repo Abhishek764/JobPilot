@@ -9,6 +9,7 @@ export const getModel = (model = env.GEMINI_MODEL): GenerativeModel =>
 
 // Approximate per-1M-token USD costs. Analytics only — not billing-grade.
 const PRICING: Record<string, { input: number; output: number }> = {
+  'gemini-flash-latest': { input: 0.3, output: 2.5 },
   'gemini-2.0-flash-exp': { input: 0.1, output: 0.4 },
   'gemini-2.0-flash': { input: 0.1, output: 0.4 },
   'gemini-1.5-flash': { input: 0.075, output: 0.3 },
@@ -16,6 +17,6 @@ const PRICING: Record<string, { input: number; output: number }> = {
 };
 
 export const estimateCostUsd = (model: string, tokensIn: number, tokensOut: number): number => {
-  const p = PRICING[model] ?? PRICING['gemini-2.0-flash-exp']!;
+  const p = PRICING[model] ?? PRICING['gemini-flash-latest']!;
   return (tokensIn / 1_000_000) * p.input + (tokensOut / 1_000_000) * p.output;
 };

@@ -47,6 +47,14 @@ export const versionService = {
       throw new BadRequestError('Resume has no extracted text yet — wait for parsing to finish');
     }
 
+    if (input.analysisId) {
+      const analysis = await prisma.resumeAnalysis.findFirst({
+        where: { id: input.analysisId, userId: user.id, resumeId },
+        select: { id: true },
+      });
+      if (!analysis) throw new NotFoundError('Resume analysis');
+    }
+
     await assertAiQuota('resumeVersion', user.id);
     const target = await resolveTarget(input);
     const version = await prisma.resumeVersion.create({

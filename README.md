@@ -165,14 +165,16 @@ Everything runs on free tiers (no card needed): **Render** (API, web, Key Value/
 **Neon** (Postgres + S3-compatible Object Storage), **Clerk** (auth) and **Gemini** (AI).
 [`render.yaml`](./render.yaml) is a Render Blueprint for all three Render pieces.
 
-1. **Neon** — create a project. Copy the connection string (`DATABASE_URL`). Create an Object
+1. **Neon** — create a project. Copy the **direct** connection string (host without `-pooler`)
+   as `DATABASE_URL`; migrations need a session-level lock the pooler can't hold. Create an Object
    Storage bucket and an S3 credential; note the endpoint, bucket, access key and secret, and add a
    CORS rule for your web URL (see [Resume uploads](#resume-uploads)).
 2. **Clerk** — create an application; copy the publishable and secret keys.
 3. **Gemini** — create an API key at Google AI Studio.
 4. **Render** — _New → Blueprint_ on this repo. Fill the `sync: false` values: the keys above,
    `CORS_ORIGINS` = the web URL, `NEXT_PUBLIC_API_URL` = the API URL, `NEXT_PUBLIC_APP_URL` = the
-   web URL.
+   web URL. Render shows both URLs as soon as the services are created; `NEXT_PUBLIC_*` values are
+   baked in at build time, so if you change them, redeploy the web service.
 
 The API applies migrations on start (`prisma migrate deploy`) and runs the queue workers in-process
 (`RUN_WORKERS=true`) because the free plan has no background workers. Free services sleep after

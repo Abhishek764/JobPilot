@@ -22,9 +22,10 @@ const EnvSchema = z.object({
   CLERK_SECRET_KEY: z.string().min(1),
   CLERK_WEBHOOK_SECRET: z.string().optional(),
   GEMINI_API_KEY: z.string().min(1),
-  GEMINI_MODEL: z.string().default('gemini-2.0-flash-exp'),
-  GEMINI_MATCH_MODEL: z.string().default('gemini-2.0-flash-exp'),
-  GEMINI_RESUME_MODEL: z.string().default('gemini-2.0-flash-exp'),
+  // gemini-2.0-* is shut down; the -latest alias tracks Google's current stable Flash model.
+  GEMINI_MODEL: z.string().default('gemini-flash-latest'),
+  GEMINI_MATCH_MODEL: z.string().default('gemini-flash-latest'),
+  GEMINI_RESUME_MODEL: z.string().default('gemini-flash-latest'),
   AI_CACHE_TTL_SECONDS: z.coerce
     .number()
     .int()

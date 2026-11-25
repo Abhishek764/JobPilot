@@ -19,7 +19,10 @@ services:
       pnpm install --frozen-lockfile --prod=false &&
       pnpm --filter @jobpilot/db generate &&
       pnpm turbo run build --filter=@jobpilot/api
-    startCommand: pnpm --filter @jobpilot/db migrate:deploy && node apps/api/dist/server.js
+    # Calls the prisma binary directly so the start step doesn't depend on pnpm at runtime.
+    startCommand: >-
+      packages/db/node_modules/.bin/prisma migrate deploy --schema packages/db/prisma/schema.prisma &&
+      node apps/api/dist/server.js
     envVars:
       - key: NODE_VERSION
         value: 20
@@ -30,11 +33,30 @@ services:
         value: 'true'
       - key: PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD
         value: '1'
+      # Fit all in-process workers into the free plan's 512 MB.
+      - key: NODE_OPTIONS
+        value: --max-old-space-size=384
+      - key: AI_MATCH_CONCURRENCY
+        value: '2'
+      - key: RESUME_AI_CONCURRENCY
+        value: '2'
+      - key: RESUME_PARSE_CONCURRENCY
+        value: '1'
+      - key: RESUME_MAX_BYTES
+        value: '5242880'
+      - key: GEMINI_MODEL
+        value: gemini-flash-latest
+      - key: GEMINI_MATCH_MODEL
+        value: gemini-flash-latest
+      - key: GEMINI_RESUME_MODEL
+        value: gemini-flash-latest
       - key: REDIS_URL
         fromService:
           type: keyvalue
           name: jobpilot-redis
           property: connectionString
+      # Use Neon's *direct* connection string (host without "-pooler"): migrate deploy
+      # needs a session-level lock that PgBouncer transaction pooling can't hold.
       - key: DATABASE_URL
         sync: false
       - key: CLERK_SECRET_KEY
@@ -54,7 +76,7 @@ services:
       - key: S3_SECRET_ACCESS_KEY
         sync: false
       - key: S3_REGION
-        value: auto
+        value: us-east-1
       - key: S3_FORCE_PATH_STYLE
         value: 'true'
 

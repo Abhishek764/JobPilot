@@ -181,4 +181,14 @@ export const scheduleFeedSync = () =>
     { repeat: { every: env.FEED_SYNC_INTERVAL_HOURS * 3_600_000 }, jobId: 'feed-sync-repeat' },
   );
 
-export const enqueueFeedSyncNow = () => feedSyncQueue.add('sync-now', {});
+/**
+ * Sync at startup at most once per interval: free hosts sleep and wake often, and the
+ * feeds ask for a handful of calls per day. The jobId dedupes wakes inside one bucket.
+ */
+export const enqueueFeedSyncNow = (now: number = Date.now()) => {
+  const bucket = Math.floor(now / (env.FEED_SYNC_INTERVAL_HOURS * 3_600_000));
+  return feedSyncQueue.add('sync-now', {}, { jobId: `feed-sync-now-${bucket}` });
+};
+
+/** Admin-triggered sync that bypasses the interval dedupe. */
+export const enqueueFeedSyncForced = () => feedSyncQueue.add('sync-forced', {});
