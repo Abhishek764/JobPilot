@@ -12,6 +12,8 @@ const ai = vi.hoisted(() => ({ analyzeResume: vi.fn() }));
 const users = vi.hoisted(() => ({ getByClerkId: vi.fn() }));
 
 vi.mock('@jobpilot/db', () => ({ prisma }));
+const quota = vi.hoisted(() => ({ assertAiQuota: vi.fn() }));
+vi.mock('../../shared/ai-quota', () => quota);
 vi.mock('../../config/logger', () => ({
   logger: { error: vi.fn(), warn: vi.fn(), info: vi.fn() },
 }));

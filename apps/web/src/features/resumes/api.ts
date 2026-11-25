@@ -33,8 +33,9 @@ export const resumesApi = {
     apiFetch<UploadTicket>('/resumes/upload-ticket', { method: 'POST', body, token }),
   ingest: (token: string | null, id: string) =>
     apiFetch<Resume>(`/resumes/${id}/ingest`, { method: 'POST', token }),
-  list: (token: string | null, page = 1) =>
-    apiFetch<PaginatedResult<Resume>>(`/resumes?page=${page}`, { token }),
+  // 100 is the API's page cap; students rarely keep more resumes than that.
+  list: (token: string | null, page = 1, pageSize = 100) =>
+    apiFetch<PaginatedResult<Resume>>(`/resumes?page=${page}&pageSize=${pageSize}`, { token }),
   get: (token: string | null, id: string) => apiFetch<ResumeDetail>(`/resumes/${id}`, { token }),
   downloadUrl: (token: string | null, id: string) =>
     apiFetch<{ url: string }>(`/resumes/${id}/download`, { token }),

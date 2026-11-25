@@ -62,7 +62,7 @@ interface Props {
 
 export const ApplicationDrawer = ({ id, onClose }: Props) => {
   const open = Boolean(id);
-  const { data: app } = useApplication(id);
+  const { data: app, isError, error } = useApplication(id);
   const events = useEvents(id ?? '', open);
   const notes = useNotes(id ?? '', open);
   const reminders = useReminders(id ?? '', open);
@@ -301,6 +301,14 @@ export const ApplicationDrawer = ({ id, onClose }: Props) => {
               </Button>
             </footer>
           </>
+        ) : isError ? (
+          <div role="alert" className="space-y-3">
+            <DialogTitle className="text-base">Couldn’t open this application</DialogTitle>
+            <p className="text-muted-foreground text-sm">{error.message}</p>
+            <Button size="sm" variant="outline" onClick={onClose}>
+              Close
+            </Button>
+          </div>
         ) : (
           <DialogTitle className="text-muted-foreground text-sm">Loading…</DialogTitle>
         )}

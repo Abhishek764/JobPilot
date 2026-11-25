@@ -11,6 +11,7 @@ const repo = vi.hoisted(() => ({
   delete: vi.fn(),
   recordEvent: vi.fn(),
   insights: vi.fn(),
+  jobExists: vi.fn(),
 }));
 const notes = vi.hoisted(() => ({ create: vi.fn() }));
 const reminders = vi.hoisted(() => ({ create: vi.fn() }));
@@ -131,5 +132,13 @@ describe('application workflow', () => {
     expect(result.byStatus.APPLIED).toBe(2);
     expect(result.byStatus.OFFER).toBe(0);
     expect(result.upcomingReminders).toBe(1);
+  });
+
+  it('create with an unknown jobId is NotFound and creates nothing', async () => {
+    repo.jobExists.mockResolvedValue(false);
+    await expect(
+      applicationService.create(CLERK, { company: 'A', title: 'B', jobId: 'job_missing' } as never),
+    ).rejects.toBeInstanceOf(NotFoundError);
+    expect(repo.create).not.toHaveBeenCalled();
   });
 });

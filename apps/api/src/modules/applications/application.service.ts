@@ -36,6 +36,11 @@ const ensureOwned = async (userId: string, id: string): Promise<Application> => 
   return app;
 };
 
+/** A linked job must exist; otherwise the FK insert fails with a 500. */
+const ensureJob = async (jobId: string | null | undefined): Promise<void> => {
+  if (jobId && !(await applicationRepository.jobExists(jobId))) throw new NotFoundError('Job');
+};
+
 export const applicationService = {
   async list(
     clerkUserId: string,
@@ -57,6 +62,7 @@ export const applicationService = {
 
   async create(clerkUserId: string, input: CreateApplicationInput): Promise<Application> {
     const userId = await resolveUserId(clerkUserId);
+    await ensureJob(input.jobId);
     const status = input.status ?? 'SAVED';
     const max = await applicationRepository.maxPosition(userId, status);
     const position = (max ?? 0) + POSITION_STEP;
@@ -72,6 +78,7 @@ export const applicationService = {
     input: UpdateApplicationInput,
   ): Promise<Application> {
     const userId = await resolveUserId(clerkUserId);
+    await ensureJob(input.jobId);
     const result = await applicationRepository.update(userId, id, input);
     if (result.count === 0) throw new NotFoundError('Application');
 

@@ -1,7 +1,7 @@
 'use client';
 
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { ApplicationDrawer } from './application-drawer';
 import { ApplicationInsights } from './application-insights';
@@ -11,7 +11,13 @@ export const ApplicationsBoard = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
-  const [selectedId, setSelectedId] = useState<string | null>(() => searchParams.get('open'));
+  const openParam = searchParams.get('open');
+  const [selectedId, setSelectedId] = useState<string | null>(openParam);
+
+  // Follow ?open= changes from client-side navigation while already on this page.
+  useEffect(() => {
+    if (openParam) setSelectedId(openParam);
+  }, [openParam]);
 
   const close = () => {
     setSelectedId(null);

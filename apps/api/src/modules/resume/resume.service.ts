@@ -44,8 +44,15 @@ export const resumeService = {
     });
 
     const key = sourceKey(userId, created.id, input.contentType);
+    let url: string;
+    try {
+      url = await storage.presignUpload(key, input.contentType);
+    } catch (err) {
+      // Don't leave a PENDING row behind for an upload that can never happen.
+      await resumeRepository.delete(userId, created.id);
+      throw err;
+    }
     const resume = await resumeRepository.update(created.id, { fileKey: key });
-    const url = await storage.presignUpload(key, input.contentType);
 
     return {
       resume,

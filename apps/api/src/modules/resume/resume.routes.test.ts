@@ -240,4 +240,16 @@ describe('resume routes', () => {
     expect(res.status).toBe(400);
     expect(queue.enqueueResumeParse).not.toHaveBeenCalled();
   });
+
+  it('removes the new row when presigning the upload fails', async () => {
+    storage.presignUpload.mockRejectedValueOnce(new Error('storage down'));
+    const res = await call('POST', '/upload-ticket', 'clerk_a', {
+      title: 'My CV',
+      filename: 'cv.pdf',
+      contentType: 'application/pdf',
+      sizeBytes: 2048,
+    });
+    expect(res.status).toBe(500);
+    expect(store.rows.has('resume_new')).toBe(false);
+  });
 });

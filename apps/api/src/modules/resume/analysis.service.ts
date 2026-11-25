@@ -1,6 +1,7 @@
 import { prisma, type Prisma, type ResumeAnalysis } from '@jobpilot/db';
 
 import { logger } from '../../config/logger';
+import { assertAiQuota } from '../../shared/ai-quota';
 import { BadRequestError, NotFoundError } from '../../shared/errors';
 import { aiService } from '../ai/ai.service';
 import { enqueueResumeAnalysis } from '../queue/queues';
@@ -40,6 +41,7 @@ export const analysisService = {
       throw new BadRequestError('Resume has no extracted text yet — wait for parsing to finish');
     }
 
+    await assertAiQuota('resumeAnalysis', user.id);
     const { jobId, jobDescription } = await resolveJobDescription(input);
     const analysis = await prisma.resumeAnalysis.create({
       data: { userId: user.id, resumeId, jobId, jobDescription, status: 'QUEUED' },

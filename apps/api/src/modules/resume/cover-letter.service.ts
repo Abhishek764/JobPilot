@@ -2,6 +2,7 @@ import { prisma, type CoverLetter } from '@jobpilot/db';
 import type { CoverLetterTone } from '@jobpilot/types';
 
 import { logger } from '../../config/logger';
+import { assertAiQuota } from '../../shared/ai-quota';
 import { BadRequestError, NotFoundError } from '../../shared/errors';
 import { aiService } from '../ai/ai.service';
 import { enqueueCoverLetter } from '../queue/queues';
@@ -43,6 +44,7 @@ export const coverLetterService = {
       throw new BadRequestError('Resume has no extracted text yet — wait for parsing to finish');
     }
 
+    await assertAiQuota('coverLetter', user.id);
     const { jobId, jobDescription } = await resolveJobDescription(input);
     const letter = await prisma.coverLetter.create({
       data: {

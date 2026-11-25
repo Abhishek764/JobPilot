@@ -67,12 +67,18 @@ export const useUploadResume = (onStage: (s: UploadStage) => void) => {
       onStage('ticket');
       const ticket = await resumesApi.createUpload(await token(), metadata);
       onStage('uploading');
-      const put = await fetch(ticket.upload.url, {
-        method: ticket.upload.method,
-        headers: ticket.upload.headers,
-        body: file,
-      });
-      if (!put.ok) throw new Error(`Upload to storage failed (${put.status})`);
+      try {
+        const put = await fetch(ticket.upload.url, {
+          method: ticket.upload.method,
+          headers: ticket.upload.headers,
+          body: file,
+        });
+        if (!put.ok) throw new Error(`Upload to storage failed (${put.status})`);
+      } catch (err) {
+        // The row was created for this upload; remove it so no stuck PENDING resume remains.
+        await resumesApi.remove(await token(), ticket.resume.id).catch(() => undefined);
+        throw err;
+      }
       onStage('ingesting');
       return resumesApi.ingest(await token(), ticket.resume.id);
     },

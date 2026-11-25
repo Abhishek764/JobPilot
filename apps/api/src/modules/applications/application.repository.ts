@@ -174,6 +174,9 @@ export const applicationRepository = {
     };
   },
 
+  jobExists: async (jobId: string): Promise<boolean> =>
+    (await prisma.job.count({ where: { id: jobId } })) > 0,
+
   recordEvent: (
     applicationId: string,
     type: ApplicationEventType,

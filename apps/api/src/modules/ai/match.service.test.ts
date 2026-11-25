@@ -20,6 +20,8 @@ const ai = vi.hoisted(() => ({ analyzeMatch: vi.fn() }));
 const queue = vi.hoisted(() => ({ enqueueMatchAnalysis: vi.fn() }));
 
 vi.mock('@jobpilot/db', () => ({ prisma }));
+const quota = vi.hoisted(() => ({ assertAiQuota: vi.fn() }));
+vi.mock('../../shared/ai-quota', () => quota);
 vi.mock('../../config/logger', () => ({
   logger: { error: vi.fn(), info: vi.fn(), warn: vi.fn() },
 }));
@@ -154,5 +156,36 @@ describe('matchService failure handling', () => {
       'quota',
     );
     expect(repo.setFailed).toHaveBeenCalledWith('match_1', 'quota');
+  });
+
+  describe('matchService job description source', () => {
+    beforeEach(() => {
+      vi.resetAllMocks();
+      prisma.resume.findFirst.mockResolvedValue(ownedResume);
+      repo.findReusable.mockResolvedValue(null);
+      repo.create.mockResolvedValue({ id: 'match_new' });
+    });
+
+    const pasted = 'A pasted description that differs from the saved listing text, long enough.';
+
+    it('analyses the saved job text when a jobId is given, ignoring pasted text', async () => {
+      prisma.job.findUnique.mockResolvedValue({ id: 'job_1', description: JD });
+      await matchService.createAndEnqueue({ ...request, jobDescription: pasted });
+      expect(repo.create).toHaveBeenCalledWith(expect.objectContaining({ jobDescription: JD }));
+    });
+
+    it('falls back to pasted text when the saved job has no description', async () => {
+      prisma.job.findUnique.mockResolvedValue({ id: 'job_1', description: null });
+      await matchService.createAndEnqueue({ ...request, jobDescription: pasted });
+      expect(repo.create).toHaveBeenCalledWith(expect.objectContaining({ jobDescription: pasted }));
+    });
+  });
+
+  it('starts no work when the hourly AI quota is exhausted', async () => {
+    prisma.job.findUnique.mockResolvedValue({ id: 'job_1', description: JD });
+    quota.assertAiQuota.mockRejectedValue(new Error('Hourly AI limit reached'));
+    await expect(matchService.createAndEnqueue(request)).rejects.toThrow('Hourly AI limit');
+    expect(quota.assertAiQuota).toHaveBeenCalledWith('matchAnalysis', 'user_1');
+    expect(repo.create).not.toHaveBeenCalled();
   });
 });

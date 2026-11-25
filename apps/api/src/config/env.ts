@@ -66,6 +66,7 @@ const EnvSchema = z.object({
     .default(15 * 1024 * 1024),
   RESUME_URL_TTL_SECONDS: z.coerce.number().int().positive().default(900),
   RESUME_PARSE_CONCURRENCY: z.coerce.number().int().positive().default(2),
+  AI_JOBS_PER_HOUR: z.coerce.number().int().positive().default(30),
   RESUME_AI_CONCURRENCY: z.coerce.number().int().positive().default(4),
   BULL_PREFIX: z.string().default('jobpilot'),
   // Free/single-instance hosting: run queue workers inside the API process.

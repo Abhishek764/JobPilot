@@ -2,6 +2,7 @@ import { prisma } from '@jobpilot/db';
 import type { MatchAnalysis, MatchTrack } from '@jobpilot/db';
 
 import { logger } from '../../config/logger';
+import { assertAiQuota } from '../../shared/ai-quota';
 import { BadRequestError, NotFoundError } from '../../shared/errors';
 import { enqueueMatchAnalysis } from '../queue/queues';
 
@@ -21,13 +22,17 @@ const ensureJobDescription = async (
   jobId: string | undefined,
   jobDescription: string | undefined,
 ): Promise<{ jobId: string | null; jobDescription: string }> => {
-  if (jobDescription && jobDescription.trim().length >= 50) {
-    return { jobId: jobId ?? null, jobDescription };
-  }
+  // A saved job is analysed against its own listing text (the worker re-reads it too),
+  // so reuse keys on the text that is actually analysed. Pasted text is a fallback.
   if (jobId) {
     const job = await prisma.job.findUnique({ where: { id: jobId } });
-    if (!job?.description) throw new NotFoundError('Job description');
-    return { jobId, jobDescription: job.description };
+    if (!job) throw new NotFoundError('Job');
+    const text = job.description?.trim() || jobDescription?.trim();
+    if (!text) throw new BadRequestError('This job has no description; paste one to analyse');
+    return { jobId, jobDescription: text };
+  }
+  if (jobDescription && jobDescription.trim().length >= 50) {
+    return { jobId: null, jobDescription };
   }
   throw new BadRequestError('jobDescription or jobId required');
 };
@@ -42,6 +47,7 @@ export const matchService = {
       throw new BadRequestError('Resume has no extracted text yet — wait for parsing to finish');
     }
 
+    await assertAiQuota('matchAnalysis', req.userId);
     const resolved = await ensureJobDescription(req.jobId, req.jobDescription);
 
     // Reuse a finished result only when it was computed from today's inputs:
