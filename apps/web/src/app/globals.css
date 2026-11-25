@@ -40,13 +40,13 @@
     --ring: 212 48% 64%;
 
     /* Glass material */
-    --glass-fill: 0 0% 100% / 0.06;
+    --glass-fill: 216 20% 70% / 0.08;
     --glass-fill-strong: 216 16% 13% / 0.6;
     --glass-fill-hover: 0 0% 100% / 0.1;
     --glass-edge: 0 0% 100% / 0.12;
     --glass-edge-hover: 0 0% 100% / 0.22;
     --glass-highlight: 0 0% 100% / 0.18;
-    --glass-blur: 22px;
+    --glass-blur: 34px;
   }
 }
 
@@ -67,25 +67,6 @@
       'ss01' on,
       'cv11' on;
     letter-spacing: -0.006em;
-  }
-
-  /*
-   * Ambient backdrop the glass refracts: soft blue-grey light, barely moving.
-   * Fixed + pointer-events:none so it never affects layout or input.
-   */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: -20vmax;
-    z-index: -1;
-    pointer-events: none;
-    background:
-      radial-gradient(55vmax 45vmax at 15% 0%, hsl(212 28% 34% / 0.5), transparent 65%),
-      radial-gradient(50vmax 50vmax at 90% 85%, hsl(218 18% 26% / 0.55), transparent 65%),
-      radial-gradient(35vmax 30vmax at 70% 25%, hsl(205 30% 50% / 0.12), transparent 70%);
-    filter: blur(40px);
-    animation: ambient-drift 60s ease-in-out infinite alternate;
-    will-change: transform;
   }
 
   h1,
@@ -110,8 +91,8 @@
       hsl(var(--glass-fill)) 100%
     );
     border: 1px solid hsl(var(--glass-edge));
-    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(170%);
-    backdrop-filter: blur(var(--glass-blur)) saturate(170%);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(150%) brightness(0.82);
+    backdrop-filter: blur(var(--glass-blur)) saturate(150%) brightness(0.82);
     box-shadow:
       inset 0 1px 0 hsl(var(--glass-highlight)),
       inset 0 -1px 0 hsl(0 0% 100% / 0.03),
@@ -122,14 +103,85 @@
   .glass-strong {
     background: hsl(var(--glass-fill-strong));
     border: 1px solid hsl(var(--glass-edge));
-    -webkit-backdrop-filter: blur(28px) saturate(180%);
-    backdrop-filter: blur(28px) saturate(180%);
+    -webkit-backdrop-filter: blur(40px) saturate(150%) brightness(0.8);
+    backdrop-filter: blur(40px) saturate(150%) brightness(0.8);
     box-shadow:
       inset 0 1px 0 hsl(var(--glass-highlight)),
       0 18px 50px -28px rgb(0 0 0 / 0.45);
   }
 
   /* Interactive glass (linked cards): brighten and lift a hair on hover, press in on tap. */
+  /* ── Backdrop ─────────────────────────────────────────────────────────── */
+  .backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    overflow: hidden;
+    pointer-events: none;
+    background: hsl(var(--background));
+  }
+  .backdrop > * {
+    position: absolute;
+    inset: 0;
+  }
+
+  /* Photo, pulled toward silver-blue so it never competes with content colour. */
+  .backdrop-photo {
+    inset: -4%;
+    animation: backdrop-push 48s ease-in-out infinite alternate;
+    will-change: transform;
+  }
+  .backdrop-photo-img {
+    object-fit: cover;
+    object-position: center 35%;
+    filter: grayscale(0.55) saturate(0.7) brightness(0.78) contrast(1.06);
+  }
+
+  /*
+   * Liquid metal: soft silver and graphite pools that slowly turn. Radial gradients are
+   * already soft, so no blur filter — the animation is a pure GPU transform.
+   */
+  .backdrop-metal {
+    inset: -35%;
+    background:
+      radial-gradient(28% 34% at 30% 32%, hsl(210 14% 78% / 0.42), transparent 70%),
+      radial-gradient(30% 26% at 72% 40%, hsl(205 18% 86% / 0.3), transparent 72%),
+      radial-gradient(34% 30% at 55% 72%, hsl(215 12% 62% / 0.38), transparent 70%),
+      radial-gradient(26% 30% at 22% 70%, hsl(220 10% 30% / 0.5), transparent 70%);
+    mix-blend-mode: soft-light;
+    opacity: 0.7;
+    animation: backdrop-turn 120s linear infinite;
+    will-change: transform;
+  }
+
+  /* Metallic sheen sweeping diagonally, like light across brushed steel. */
+  .backdrop-sheen {
+    background: linear-gradient(
+      115deg,
+      transparent 30%,
+      hsl(210 20% 90% / 0.07) 42%,
+      hsl(0 0% 100% / 0.14) 48%,
+      hsl(210 20% 90% / 0.07) 54%,
+      transparent 66%
+    );
+    background-size: 300% 100%;
+    mix-blend-mode: overlay;
+    animation: backdrop-sheen 16s ease-in-out infinite;
+  }
+
+  /* Fine grain prevents gradient banding on large dark areas. */
+  .backdrop-grain {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E");
+    opacity: 0.07;
+    mix-blend-mode: overlay;
+  }
+
+  .backdrop-vignette {
+    background:
+      radial-gradient(120% 90% at 50% 20%, transparent 40%, hsl(216 30% 3% / 0.75) 100%),
+      linear-gradient(180deg, hsl(216 30% 4% / 0.35), transparent 30%, hsl(216 30% 3% / 0.6));
+  }
+
   .glass-interactive {
     transition:
       transform 400ms cubic-bezier(0.22, 1, 0.36, 1),
@@ -188,15 +240,28 @@
   }
 }
 
-@keyframes ambient-drift {
-  0% {
-    transform: translate3d(0, 0, 0) rotate(0deg);
+@keyframes backdrop-push {
+  from {
+    transform: scale(1.02) translate3d(0, 0, 0);
+  }
+  to {
+    transform: scale(1.1) translate3d(-1.5%, -1%, 0);
+  }
+}
+
+@keyframes backdrop-turn {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes backdrop-sheen {
+  0%,
+  100% {
+    background-position: 100% 0;
   }
   50% {
-    transform: translate3d(2vmax, -1.5vmax, 0) rotate(6deg);
-  }
-  100% {
-    transform: translate3d(-2vmax, 1.5vmax, 0) rotate(-4deg);
+    background-position: 0% 0;
   }
 }
 
@@ -208,7 +273,9 @@
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
   }
-  body::before {
+  .backdrop-metal,
+  .backdrop-sheen,
+  .backdrop-grain {
     display: none;
   }
 }

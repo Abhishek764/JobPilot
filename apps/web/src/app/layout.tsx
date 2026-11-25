@@ -2,6 +2,7 @@ import { ClerkProvider } from '@clerk/nextjs';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 
+import { Backdrop } from '@/components/backdrop';
 import { QueryProvider } from '@/components/providers/query-provider';
 
 import './globals.css';
@@ -19,6 +20,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <ClerkProvider>
       <html lang="en" className="dark" suppressHydrationWarning>
         <body className={`${inter.variable} bg-background min-h-screen font-sans antialiased`}>
+          <Backdrop />
           <QueryProvider>{children}</QueryProvider>
         </body>
       </html>
