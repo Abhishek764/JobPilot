@@ -60,6 +60,8 @@ enum SourcePlatform {
   WELLFOUND
   INDEED
   NAUKRI
+  REMOTIVE
+  ARBEITNOW
   CUSTOM
 }
 

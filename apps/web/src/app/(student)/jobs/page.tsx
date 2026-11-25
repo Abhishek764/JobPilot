@@ -11,7 +11,7 @@ export default function JobsPage() {
       <header>
         <h1 className="text-3xl font-semibold tracking-tight">Find jobs</h1>
         <p className="text-muted-foreground text-sm">
-          Real listings collected from LinkedIn, Wellfound, Indeed and Naukri.
+          Real listings from Remotive, Arbeitnow, LinkedIn, Wellfound, Indeed and Naukri.
         </p>
       </header>
       <Suspense fallback={<Skeleton className="h-11 w-full" />}>

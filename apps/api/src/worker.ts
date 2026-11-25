@@ -1,26 +1,13 @@
 import { prisma } from '@jobpilot/db';
 
-import { env } from './config/env';
+import { startBackground } from './background';
 import { logger } from './config/logger';
 import { redis } from './config/redis';
-import { startAllWorkers, stopWorkers, syncScheduledSources } from './modules/queue';
+import { stopWorkers } from './modules/queue';
 import { closeBrowser } from './modules/scraper/browser';
-import { registerScrapers } from './modules/scraper/sources';
 
 const main = async (): Promise<void> => {
-  registerScrapers();
-  const workers = startAllWorkers();
-
-  if (env.SCRAPER_SCHEDULER_ENABLED) {
-    await syncScheduledSources().catch((err) =>
-      logger.error({ err }, 'initial scheduler sync failed'),
-    );
-  }
-
-  logger.info(
-    { count: workers.length, schedulerEnabled: env.SCRAPER_SCHEDULER_ENABLED },
-    '👷 workers started',
-  );
+  const workers = await startBackground();
 
   const shutdown = async (signal: string): Promise<void> => {
     logger.info({ signal }, 'worker shutdown');

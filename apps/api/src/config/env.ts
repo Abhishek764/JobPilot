@@ -10,7 +10,12 @@ const EnvSchema = z.object({
   CORS_ORIGINS: z
     .string()
     .default('http://localhost:3000')
-    .transform((s) => s.split(',').map((v) => v.trim()).filter(Boolean)),
+    .transform((s) =>
+      s
+        .split(',')
+        .map((v) => v.trim())
+        .filter(Boolean),
+    ),
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace']).default('info'),
   DATABASE_URL: z.string().url(),
   REDIS_URL: z.string().url().default('redis://localhost:6379'),
@@ -20,7 +25,11 @@ const EnvSchema = z.object({
   GEMINI_MODEL: z.string().default('gemini-2.0-flash-exp'),
   GEMINI_MATCH_MODEL: z.string().default('gemini-2.0-flash-exp'),
   GEMINI_RESUME_MODEL: z.string().default('gemini-2.0-flash-exp'),
-  AI_CACHE_TTL_SECONDS: z.coerce.number().int().positive().default(60 * 60 * 24 * 7),
+  AI_CACHE_TTL_SECONDS: z.coerce
+    .number()
+    .int()
+    .positive()
+    .default(60 * 60 * 24 * 7),
   AI_MAX_RESUME_CHARS: z.coerce.number().int().positive().default(12_000),
   AI_MAX_JOB_CHARS: z.coerce.number().int().positive().default(8_000),
   AI_MATCH_CONCURRENCY: z.coerce.number().int().positive().default(4),
@@ -50,11 +59,25 @@ const EnvSchema = z.object({
     .string()
     .default('false')
     .transform((s) => s === 'true'),
-  RESUME_MAX_BYTES: z.coerce.number().int().positive().default(15 * 1024 * 1024),
+  RESUME_MAX_BYTES: z.coerce
+    .number()
+    .int()
+    .positive()
+    .default(15 * 1024 * 1024),
   RESUME_URL_TTL_SECONDS: z.coerce.number().int().positive().default(900),
   RESUME_PARSE_CONCURRENCY: z.coerce.number().int().positive().default(2),
   RESUME_AI_CONCURRENCY: z.coerce.number().int().positive().default(4),
   BULL_PREFIX: z.string().default('jobpilot'),
+  // Free/single-instance hosting: run queue workers inside the API process.
+  RUN_WORKERS: z
+    .string()
+    .default('false')
+    .transform((s) => s === 'true'),
+  FEEDS_ENABLED: z
+    .string()
+    .default('true')
+    .transform((s) => s !== 'false'),
+  FEED_SYNC_INTERVAL_HOURS: z.coerce.number().positive().default(6),
   RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(60_000),
   RATE_LIMIT_MAX: z.coerce.number().int().positive().default(100),
   SENTRY_DSN: z.string().optional(),

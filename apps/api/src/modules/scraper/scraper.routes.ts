@@ -5,6 +5,7 @@ import { attachUserId, requireAuth } from '../../middleware/auth';
 import { requireRole } from '../../middleware/rbac';
 import { validate } from '../../middleware/validate';
 import { asyncHandler } from '../../shared/async-handler';
+import { enqueueFeedSyncNow } from '../queue/queues';
 import { syncScheduledSources } from '../queue/scheduler';
 
 import { scrapeOrchestrator } from './scrape-orchestrator';
@@ -37,6 +38,16 @@ scraperRouter.post(
     const triggeredBy = (req as Request & { user?: { id: string } }).user?.id;
     const run = await scrapeOrchestrator.trigger({ ...input, triggeredBy });
     res.status(202).json({ success: true, data: run });
+  }),
+);
+
+/** Pull the public job-board feeds now instead of waiting for the next interval. */
+scraperRouter.post(
+  '/feeds/sync',
+  requireRole('ADMIN'),
+  asyncHandler(async (_req: Request, res: Response) => {
+    const job = await enqueueFeedSyncNow();
+    res.status(202).json({ success: true, data: { jobId: job.id } });
   }),
 );
 

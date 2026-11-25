@@ -159,3 +159,26 @@ export const enqueueResumeVersion = (data: ResumeVersionJob) =>
   resumeVersionQueue.add('version', data, { jobId: data.versionId });
 export const enqueueCoverLetter = (data: CoverLetterJob) =>
   coverLetterQueue.add('cover', data, { jobId: data.coverLetterId });
+
+// ── Public job-board feeds ──────────────────────────────────────────────────
+
+export const feedSyncQueue = new Queue('feed-sync', {
+  connection,
+  prefix,
+  defaultJobOptions: {
+    attempts: 2,
+    backoff: { type: 'exponential', delay: 60_000 },
+    removeOnComplete: { count: 50 },
+    removeOnFail: { count: 50 },
+  },
+});
+
+/** Repeat the feed sync on an interval (idempotent: one repeatable per queue). */
+export const scheduleFeedSync = () =>
+  feedSyncQueue.add(
+    'sync',
+    {},
+    { repeat: { every: env.FEED_SYNC_INTERVAL_HOURS * 3_600_000 }, jobId: 'feed-sync-repeat' },
+  );
+
+export const enqueueFeedSyncNow = () => feedSyncQueue.add('sync-now', {});
