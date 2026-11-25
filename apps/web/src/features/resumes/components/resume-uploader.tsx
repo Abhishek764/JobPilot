@@ -6,7 +6,7 @@ import { useId, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
-import { MAX_RESUME_BYTES } from '../api';
+import { MAX_RESUME_BYTES, RESUME_ACCEPT, resumeMimeType } from '../api';
 import { useUploadResume, type UploadStage } from '../hooks';
 
 const STAGE_LABEL: Record<UploadStage, string> = {
@@ -17,11 +17,10 @@ const STAGE_LABEL: Record<UploadStage, string> = {
 };
 
 const validate = (file: File): string | null => {
-  const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
-  if (!isPdf) return 'Please choose a PDF file.';
+  if (!resumeMimeType(file)) return 'Please choose a PDF, DOCX or TXT file.';
   if (file.size === 0) return 'That file is empty.';
   if (file.size > MAX_RESUME_BYTES)
-    return `PDF must be under ${MAX_RESUME_BYTES / 1024 / 1024} MB.`;
+    return `File must be under ${MAX_RESUME_BYTES / 1024 / 1024} MB.`;
   return null;
 };
 
@@ -46,7 +45,7 @@ export const ResumeUploader = () => {
       return;
     }
     setFile(f);
-    if (!title) setTitle(f.name.replace(/\.pdf$/i, ''));
+    if (!title) setTitle(f.name.replace(/\.(pdf|docx|txt)$/i, ''));
   };
 
   return (
@@ -54,7 +53,7 @@ export const ResumeUploader = () => {
       className="border-border bg-card/50 space-y-4 rounded-xl border border-dashed p-6"
       onSubmit={(e) => {
         e.preventDefault();
-        if (!file) return setClientError('Choose a PDF first.');
+        if (!file) return setClientError('Choose a file first.');
         upload.mutate(
           { file, title: title.trim() || file.name },
           { onSuccess: (resume) => router.push(`/resume/${resume.id}`) },
@@ -69,8 +68,8 @@ export const ResumeUploader = () => {
       <div>
         <h2 className="font-semibold tracking-tight">Upload a resume</h2>
         <p className="text-muted-foreground text-sm">
-          PDF only, up to {MAX_RESUME_BYTES / 1024 / 1024} MB. Drop it here or browse. The file goes
-          straight to private storage; only you can download it.
+          PDF, DOCX or TXT, up to {MAX_RESUME_BYTES / 1024 / 1024} MB. Drop it here or browse. The
+          file goes straight to private storage; only you can download it.
         </p>
       </div>
       <div className="grid gap-3 sm:grid-cols-[1fr_1fr]">
@@ -82,7 +81,7 @@ export const ResumeUploader = () => {
             ref={fileRef}
             id={inputId}
             type="file"
-            accept="application/pdf,.pdf"
+            accept={RESUME_ACCEPT}
             onChange={(e) => pick(e.target.files?.[0] ?? null)}
             className="file:bg-muted file:text-foreground block w-full text-sm file:mr-3 file:rounded-md file:border-0 file:px-3 file:py-2 file:text-sm"
           />

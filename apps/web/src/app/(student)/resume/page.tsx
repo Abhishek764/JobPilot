@@ -55,7 +55,7 @@ export default function ResumeLabPage() {
           </div>
         ) : data.items.length === 0 ? (
           <div className="border-border text-muted-foreground rounded-xl border border-dashed p-8 text-center text-sm">
-            No resumes yet. Upload a PDF above to get started.
+            No resumes yet. Upload a PDF, DOCX or TXT above to get started.
           </div>
         ) : (
           <ul className="space-y-2">

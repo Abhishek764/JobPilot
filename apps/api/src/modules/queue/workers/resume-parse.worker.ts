@@ -10,7 +10,8 @@ export const createResumeParseWorker = (): Worker<ResumeParseJob> => {
   const worker = new Worker<ResumeParseJob>(
     'resume-parse',
     async (job) => {
-      const resume = await processResumeParse(job.data.resumeId);
+      const finalAttempt = job.attemptsMade + 1 >= (job.opts.attempts ?? 1);
+      const resume = await processResumeParse(job.data.resumeId, { finalAttempt });
       return { id: resume.id, fileStatus: resume.fileStatus };
     },
     { connection: redis, prefix: env.BULL_PREFIX, concurrency: env.RESUME_PARSE_CONCURRENCY },

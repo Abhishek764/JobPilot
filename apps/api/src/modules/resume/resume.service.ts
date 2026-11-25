@@ -1,5 +1,5 @@
 import type { Resume } from '@jobpilot/db';
-import type { PaginatedResult } from '@jobpilot/types';
+import { RESUME_FILE_TYPES, type PaginatedResult, type ResumeMimeType } from '@jobpilot/types';
 import type { ListResumesQuery, UploadResumeInput } from '@jobpilot/types/schemas';
 
 import { env } from '../../config/env';
@@ -16,8 +16,11 @@ const resolveUserId = async (clerkUserId: string): Promise<string> => {
   return user.id;
 };
 
-const sourceKey = (userId: string, resumeId: string): string =>
-  `resumes/${userId}/${resumeId}/source.pdf`;
+const extensionFor = (mimeType: string | null): string =>
+  RESUME_FILE_TYPES[mimeType as ResumeMimeType] ?? 'pdf';
+
+const sourceKey = (userId: string, resumeId: string, mimeType: string): string =>
+  `resumes/${userId}/${resumeId}/source.${extensionFor(mimeType)}`;
 
 export interface UploadTicket {
   resume: Resume;
@@ -40,7 +43,7 @@ export const resumeService = {
       fileStatus: 'PENDING',
     });
 
-    const key = sourceKey(userId, created.id);
+    const key = sourceKey(userId, created.id, input.contentType);
     const resume = await resumeRepository.update(created.id, { fileKey: key });
     const url = await storage.presignUpload(key, input.contentType);
 
@@ -92,7 +95,10 @@ export const resumeService = {
     const userId = await resolveUserId(clerkUserId);
     const resume = await resumeRepository.findById(userId, id);
     if (!resume?.fileKey) throw new NotFoundError('Resume file');
-    return storage.presignDownload(resume.fileKey, `${resume.title}.pdf`);
+    return storage.presignDownload(
+      resume.fileKey,
+      `${resume.title}.${extensionFor(resume.mimeType)}`,
+    );
   },
 
   async remove(clerkUserId: string, id: string): Promise<void> {

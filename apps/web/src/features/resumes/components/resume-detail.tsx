@@ -52,7 +52,7 @@ const Actions = ({ resume }: { resume: Detail }) => {
             loading={download.isPending}
             onClick={() => download.mutate()}
           >
-            Download PDF
+            Download file
           </Button>
         )}
         {resume.fileKey &&
@@ -171,7 +171,7 @@ export const ResumeDetailView = ({ id, children }: { id: string; children?: Reac
 
             <Section title="Extracted text">
               <p className="text-muted-foreground text-xs">
-                This is exactly what the AI reads. If something important is missing, your PDF may
+                This is exactly what the AI reads. If something important is missing, your file may
                 use images or unusual layout.
               </p>
               <Button

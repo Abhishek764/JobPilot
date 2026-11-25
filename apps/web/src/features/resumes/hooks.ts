@@ -6,7 +6,7 @@ import { useRef } from 'react';
 import { dashboardKeys } from '@/features/dashboard/api';
 import { useToken } from '@/lib/use-token';
 
-import { isProcessing, resumeKeys, resumesApi, type UploadMetadata } from './api';
+import { isProcessing, resumeKeys, resumeMimeType, resumesApi, type UploadMetadata } from './api';
 
 const POLL_MS = 3_000;
 /** Stop auto-polling after this long; the UI offers a manual refresh instead. */
@@ -61,7 +61,7 @@ export const useUploadResume = (onStage: (s: UploadStage) => void) => {
       const metadata: UploadMetadata = {
         title,
         filename: file.name,
-        contentType: 'application/pdf',
+        contentType: resumeMimeType(file) ?? 'application/pdf',
         sizeBytes: file.size,
       };
       onStage('ticket');

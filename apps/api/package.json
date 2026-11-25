@@ -35,6 +35,7 @@
     "express-rate-limit": "^7.4.1",
     "helmet": "^8.0.0",
     "ioredis": "^5.4.1",
+    "mammoth": "^1.8.0",
     "pdf-parse": "^1.1.1",
     "playwright": "^1.48.2",
     "rate-limit-redis": "^4.2.0",

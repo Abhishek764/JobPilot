@@ -1,4 +1,5 @@
 import type { Resume } from '@jobpilot/db';
+import mammoth from 'mammoth';
 import pdfParse from 'pdf-parse/lib/pdf-parse.js';
 
 import { env } from '../../config/env';
@@ -9,12 +10,31 @@ import { storage } from '../storage/s3';
 import { resumeRepository } from './resume.repository';
 
 const BLANK_LINES = /\n{3,}/g;
+const DOCX = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+
+/** Pull plain text out of an uploaded file; null means the type isn't supported. */
+const extractText = async (mimeType: string | null, buffer: Buffer): Promise<string | null> => {
+  switch (mimeType) {
+    case 'application/pdf':
+      return (await pdfParse(buffer)).text;
+    case DOCX:
+      return (await mammoth.extractRawText({ buffer })).value;
+    case 'text/plain':
+      return buffer.toString('utf8');
+    default:
+      return null;
+  }
+};
 
 /**
- * Queue worker body: download the PDF, extract text, and enrich with parsed
+ * Queue worker body: download the file, extract text, and enrich with parsed
  * skills/years via the AI service. Idempotent — a PARSED resume short-circuits.
  */
-export const processResumeParse = async (resumeId: string): Promise<Resume> => {
+export const processResumeParse = async (
+  resumeId: string,
+  opts: { finalAttempt?: boolean } = {},
+): Promise<Resume> => {
+  const finalAttempt = opts.finalAttempt ?? true;
   const resume = await resumeRepository.findRaw(resumeId);
   if (!resume) throw new Error('Resume not found');
   if (resume.fileStatus === 'PARSED') return resume;
@@ -29,20 +49,36 @@ export const processResumeParse = async (resumeId: string): Promise<Resume> => {
 
   await resumeRepository.update(resumeId, { fileStatus: 'PARSING', parseError: null });
 
-  let text: string;
+  // Storage/network errors are transient: let the queue retry, fail only on the last attempt.
+  let buffer: Buffer;
   try {
-    const buffer = await storage.getObject(resume.fileKey);
-    const parsed = await pdfParse(buffer);
-    // Drop NUL bytes and collapse runs of blank lines; preserve normal spacing.
-    text = parsed.text.replaceAll('\0', '').replace(BLANK_LINES, '\n\n').trim();
+    buffer = await storage.getObject(resume.fileKey);
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    logger.error({ resumeId, err: message }, 'resume PDF read failed');
-    return resumeRepository.setParseFailed(resumeId, `Could not read PDF: ${message}`);
+    logger.warn({ resumeId, err: message, finalAttempt }, 'resume download failed');
+    if (finalAttempt) {
+      await resumeRepository.setParseFailed(resumeId, `Could not download file: ${message}`);
+    } else {
+      await resumeRepository.update(resumeId, { fileStatus: 'UPLOADED', parseError: message });
+    }
+    throw err;
+  }
+
+  // Extraction errors are permanent for this file: fail without retrying.
+  let text: string;
+  try {
+    const raw = await extractText(resume.mimeType, buffer);
+    if (raw === null) return resumeRepository.setParseFailed(resumeId, 'Unsupported file type');
+    // Drop NUL bytes and collapse runs of blank lines; preserve normal spacing.
+    text = raw.replaceAll('\0', '').replace(BLANK_LINES, '\n\n').trim();
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    logger.error({ resumeId, err: message }, 'resume text extraction failed');
+    return resumeRepository.setParseFailed(resumeId, `Could not read file: ${message}`);
   }
 
   if (text.length < 30) {
-    return resumeRepository.setParseFailed(resumeId, 'No extractable text found in PDF');
+    return resumeRepository.setParseFailed(resumeId, 'No extractable text found in file');
   }
 
   let parsedSkills: string[] = [];

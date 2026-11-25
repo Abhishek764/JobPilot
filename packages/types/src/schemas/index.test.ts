@@ -10,22 +10,19 @@ describe('student API schemas', () => {
     ]);
   });
 
-  it('accepts only PDF upload tickets', () => {
-    expect(() =>
-      UploadResumeSchema.parse({
-        title: 'Resume',
-        filename: 'resume.pdf',
-        contentType: 'application/pdf',
-        sizeBytes: 1000,
-      }),
-    ).not.toThrow();
-    expect(() =>
-      UploadResumeSchema.parse({
-        title: 'Resume',
-        filename: 'resume.docx',
-        contentType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-        sizeBytes: 1000,
-      }),
-    ).toThrow();
+  it('accepts PDF, DOCX and TXT upload tickets only', () => {
+    const ticket = (filename: string, contentType: string) =>
+      UploadResumeSchema.safeParse({ title: 'Resume', filename, contentType, sizeBytes: 1000 })
+        .success;
+    expect(ticket('resume.pdf', 'application/pdf')).toBe(true);
+    expect(
+      ticket(
+        'resume.docx',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      ),
+    ).toBe(true);
+    expect(ticket('resume.txt', 'text/plain')).toBe(true);
+    expect(ticket('resume.doc', 'application/msword')).toBe(false);
+    expect(ticket('resume.png', 'image/png')).toBe(false);
   });
 });
