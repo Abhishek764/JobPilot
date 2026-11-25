@@ -36,6 +36,8 @@ export const resumesApi = {
   get: (token: string | null, id: string) => apiFetch<ResumeDetail>(`/resumes/${id}`, { token }),
   downloadUrl: (token: string | null, id: string) =>
     apiFetch<{ url: string }>(`/resumes/${id}/download`, { token }),
+  analyze: (token: string | null, id: string, body: { jobId?: string; jobDescription?: string }) =>
+    apiFetch<ResumeAnalysis>(`/resumes/${id}/analyses`, { method: 'POST', body, token }),
   remove: (token: string | null, id: string) =>
     apiFetch<void>(`/resumes/${id}`, { method: 'DELETE', token }),
 };

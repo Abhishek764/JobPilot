@@ -42,7 +42,11 @@ export const useResume = (id: string) => {
   return useQuery({
     queryKey: resumeKeys.detail(id),
     queryFn: async () => resumesApi.get(await token(), id),
-    refetchInterval: (q) => poll(Boolean(q.state.data && isProcessing(q.state.data.fileStatus))),
+    refetchInterval: (q) => {
+      const d = q.state.data;
+      const analysing = d?.analyses[0]?.status === 'QUEUED' || d?.analyses[0]?.status === 'RUNNING';
+      return poll(Boolean(d && (isProcessing(d.fileStatus) || analysing)));
+    },
   });
 };
 

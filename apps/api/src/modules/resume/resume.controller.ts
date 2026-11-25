@@ -3,6 +3,7 @@ import type { Request, Response } from 'express';
 import { asyncHandler } from '../../shared/async-handler';
 import { param } from '../../shared/params';
 
+import { analysisService } from './analysis.service';
 import { coverLetterService } from './cover-letter.service';
 import { resumeService } from './resume.service';
 
@@ -37,6 +38,11 @@ export const resumeController = {
   createCoverLetter: asyncHandler(async (req: Request, res: Response) => {
     const letter = await coverLetterService.create(clerkId(req), param(req, 'id'), req.body);
     res.status(202).json({ success: true, data: letter });
+  }),
+
+  createAnalysis: asyncHandler(async (req: Request, res: Response) => {
+    const analysis = await analysisService.create(clerkId(req), param(req, 'id'), req.body);
+    res.status(202).json({ success: true, data: analysis });
   }),
 
   remove: asyncHandler(async (req: Request, res: Response) => {

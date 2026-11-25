@@ -7,6 +7,7 @@ import { createCoverLetterWorker } from './workers/cover-letter.worker';
 import { createFeedSyncWorker } from './workers/feed-sync.worker';
 import { createMatchAnalysisWorker } from './workers/match-analysis.worker';
 import { createNormalizeWorker } from './workers/normalize.worker';
+import { createResumeAnalysisWorker } from './workers/resume-analysis.worker';
 import { createResumeParseWorker } from './workers/resume-parse.worker';
 import { createSchedulerWorker } from './workers/scheduler.worker';
 import { createScrapeDetailWorker } from './workers/scrape-detail.worker';
@@ -23,6 +24,7 @@ export const startAllWorkers = (): Worker[] => {
     createMatchAnalysisWorker(),
     createResumeParseWorker(),
     createCoverLetterWorker(),
+    createResumeAnalysisWorker(),
   ];
   if (env.FEEDS_ENABLED) workers.push(createFeedSyncWorker());
   if (env.SCRAPER_SCHEDULER_ENABLED) {

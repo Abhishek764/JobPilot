@@ -16,6 +16,12 @@ import {
 } from './ai.prompts';
 import { calibrate, skillOverlap, truncate } from './ai.scoring';
 import { estimateCostUsd, getModel } from './gemini.client';
+import {
+  buildResumeAnalysisPrompt,
+  normalizeResumeAnalysis,
+  RESUME_ANALYSIS_SCHEMA,
+  type ResumeAnalysisResult,
+} from './resume-analysis';
 
 const safeJson = <T>(text: string): T => {
   const cleaned = text.replace(/```(?:json)?/g, '').trim();
@@ -261,6 +267,49 @@ export const aiService = {
       durationMs: Date.now() - started,
     });
     return { content, model: modelName, tokensIn, tokensOut, costUsd };
+  },
+
+  /** ATS + recruiter-style review of a resume, optionally against one job. */
+  async analyzeResume(input: {
+    resumeContent: string;
+    jobDescription: string | null;
+    userId?: string;
+  }): Promise<
+    ResumeAnalysisResult & { model: string; tokensIn: number; tokensOut: number; costUsd: number }
+  > {
+    const modelName = env.GEMINI_RESUME_MODEL;
+    const prompt = buildResumeAnalysisPrompt(
+      truncate(input.resumeContent, env.AI_MAX_RESUME_CHARS),
+      input.jobDescription ? truncate(input.jobDescription, env.AI_MAX_JOB_CHARS) : null,
+    );
+    const started = Date.now();
+    const result = await getModel(modelName).generateContent({
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      generationConfig: {
+        temperature: 0.2,
+        responseMimeType: 'application/json',
+        responseSchema: RESUME_ANALYSIS_SCHEMA,
+      },
+    });
+    const parsed = normalizeResumeAnalysis(
+      safeJson<unknown>(result.response.text()),
+      Boolean(input.jobDescription),
+    );
+    const usage = result.response.usageMetadata;
+    const tokensIn = usage?.promptTokenCount ?? 0;
+    const tokensOut = usage?.candidatesTokenCount ?? 0;
+    const costUsd = estimateCostUsd(modelName, tokensIn, tokensOut);
+    await this.recordUsage({
+      userId: input.userId,
+      operation: 'resume.analyze',
+      model: modelName,
+      tokensIn,
+      tokensOut,
+      cached: false,
+      costUsd,
+      durationMs: Date.now() - started,
+    });
+    return { ...parsed, model: modelName, tokensIn, tokensOut, costUsd };
   },
 
   // Legacy Gemini-backed helpers kept for backwards compatibility with existing controllers.

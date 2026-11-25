@@ -14,6 +14,7 @@ import { useToken } from '@/lib/use-token';
 import { isProcessing, resumeKeys, resumesApi, type ResumeDetail as Detail } from '../api';
 import { useDeleteResume, useResume } from '../hooks';
 
+import { ResumeAnalysisPanel } from './resume-analysis';
 import { ResumeProgress } from './resume-status';
 
 const Section = ({ title, children }: { title: string; children: ReactNode }) => (
@@ -190,27 +191,7 @@ export const ResumeDetailView = ({ id, children }: { id: string; children?: Reac
           </>
         )}
 
-        <Section title="Analyses">
-          {resume.analyses.length === 0 ? (
-            <p className="text-muted-foreground text-sm">No analyses yet.</p>
-          ) : (
-            <ul className="space-y-2">
-              {resume.analyses.map((a) => (
-                <li
-                  key={a.id}
-                  className="border-border flex items-center justify-between rounded-lg border p-3 text-sm"
-                >
-                  <span>{new Date(a.createdAt).toLocaleString()}</span>
-                  <span className="font-medium tabular-nums">
-                    {a.status === 'COMPLETED'
-                      ? `${a.overallScore ?? '—'}/100`
-                      : a.status.toLowerCase()}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </Section>
+        {resume.fileStatus === 'PARSED' && <ResumeAnalysisPanel resume={resume} />}
 
         <Section title="Tailored versions">
           {resume.versions.length === 0 ? (
